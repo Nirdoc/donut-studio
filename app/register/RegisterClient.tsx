@@ -46,9 +46,9 @@ export default function RegisterClient() {
         </div>
         <div className="relative z-10 text-center">
           <Image
-            src="https://www.donutstudio.ro/wp-content/uploads/2024/07/donut-Studio-Artisanal-Pastry-logo_border.svg"
+            src="/logo.svg"
             alt="Donut Studio" width={160} height={80}
-            className="h-20 w-auto mx-auto mb-10 brightness-0 invert"
+            className="h-20 w-auto mx-auto mb-10"
             unoptimized
           />
           <h2 className="font-display text-4xl text-[#f0ddc8] mb-4 leading-tight">
@@ -74,7 +74,7 @@ export default function RegisterClient() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
           <div className="lg:hidden mb-8">
             <Image
-              src="https://www.donutstudio.ro/wp-content/uploads/2024/07/donut-Studio-Artisanal-Pastry-logo_border.svg"
+              src="/logo.svg"
               alt="Donut Studio" width={110} height={55}
               className="h-12 w-auto brightness-0 invert" unoptimized
             />

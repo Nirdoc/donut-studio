@@ -11,11 +11,11 @@ export default function Footer() {
           <div className="lg:col-span-1">
             <div className="mb-4">
               <Image
-                src="https://www.donutstudio.ro/wp-content/uploads/2024/07/donut-Studio-Artisanal-Pastry-logo_border.svg"
+                src="/logo.svg"
                 alt="Donut Studio"
                 width={130}
                 height={65}
-                className="h-14 w-auto brightness-0 invert"
+                className="h-14 w-auto"
                 unoptimized
               />
             </div>

@@ -42,10 +42,10 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center group flex-shrink-0">
             <Image
-              src="https://www.donutstudio.ro/wp-content/uploads/2024/07/donut-Studio-Artisanal-Pastry-logo_border.svg"
+              src="/logo.svg"
               alt="Donut Studio"
-              width={120} height={60}
-              className="h-11 w-auto group-hover:scale-105 transition-transform brightness-0 invert"
+              width={160} height={80}
+              className="h-20 w-auto group-hover:scale-105 transition-transform"
               unoptimized
             />
           </Link>

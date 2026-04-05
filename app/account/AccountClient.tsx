@@ -63,7 +63,7 @@ export default function AccountClient() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
           <div>
-            <h1 className="font-display text-4xl text-[#f0ddc8]">Contul meu</h1>
+            <h1 className="font-display text-4xl text-[var(--text)]">Contul meu</h1>
             <p className="text-white text-sm mt-1">
               Hei, {user.name}! 👋
             </p>
@@ -96,11 +96,11 @@ export default function AccountClient() {
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-white text-sm">
+                <div className="flex items-center gap-2 text-[var(--text-80)] text-sm">
                   <Mail size={14} className="text-white" />
                   {user.email}
                 </div>
-                <div className="flex items-center gap-2 text-white text-sm">
+                <div className="flex items-center gap-2 text-[var(--text-80)] text-sm">
                   <ShoppingBag size={14} className="text-white" />
                   {mockOrders.length} comenzi plasate
                 </div>
@@ -125,7 +125,7 @@ export default function AccountClient() {
                   <Link
                     key={item.label}
                     href={item.href}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#BC8157]/5 transition-colors text-sm text-white hover:text-[#BC8157]"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#BC8157]/5 transition-colors text-sm text-[var(--text-70)] hover:text-[#BC8157]"
                   >
                     <item.icon size={16} />
                     {item.label}
@@ -197,14 +197,14 @@ export default function AccountClient() {
                           </div>
                         ))}
                       </div>
-                      <div className="text-sm text-[#f0ddc8]/55">
+                      <div className="text-sm text-[var(--text-55)]">
                         {order.items.join(", ")}
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between pt-3 border-t border-[#BC8157]/8">
-                      <span className="text-sm text-[#f0ddc8]/45">Total comandă</span>
-                      <span className="font-bold text-[#f0ddc8]">{order.total} lei</span>
+                      <span className="text-sm text-[var(--text-45)]">Total comandă</span>
+                      <span className="font-bold text-[var(--text)]">{order.total} lei</span>
                     </div>
                   </motion.div>
                 ))}

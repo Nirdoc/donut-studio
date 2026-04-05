@@ -63,8 +63,8 @@ function ResetPasswordForm() {
           <div className="w-14 h-14 rounded-2xl bg-[#BC8157]/15 border border-[#BC8157]/25 flex items-center justify-center mb-6">
             <Lock size={24} className="text-[#BC8157]" />
           </div>
-          <h1 className="font-display text-3xl text-[#f0ddc8] mb-2">Parolă nouă</h1>
-          <p className="text-[#f0ddc8]/55 text-sm mb-8 leading-relaxed">
+          <h1 className="font-display text-3xl text-[var(--text)] mb-2">Parolă nouă</h1>
+          <p className="text-[var(--text-55)] text-sm mb-8 leading-relaxed">
             Alege o parolă nouă pentru contul tău.
           </p>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -72,7 +72,7 @@ function ResetPasswordForm() {
               <div className="bg-red-900/30 border border-red-700/40 text-red-400 text-sm px-4 py-3 rounded-2xl">{error}</div>
             )}
             <div>
-              <label className="block text-sm font-medium text-[#f0ddc8]/70 mb-1.5">Parolă nouă</label>
+              <label className="block text-sm font-medium text-[var(--text-70)] mb-1.5">Parolă nouă</label>
               <div className="relative">
                 <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#BC8157]/60" />
                 <input type={showPass ? "text" : "password"} value={password}
@@ -80,13 +80,13 @@ function ResetPasswordForm() {
                   placeholder="Minim 6 caractere" required
                   className="w-full pl-11 pr-12 py-3.5 input-dark rounded-2xl text-sm" />
                 <button type="button" onClick={() => setShowPass(!showPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#f0ddc8]/40 hover:text-[#f0ddc8]">
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-40)] hover:text-[var(--text)]">
                   {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#f0ddc8]/70 mb-1.5">Confirmă parola</label>
+              <label className="block text-sm font-medium text-[var(--text-70)] mb-1.5">Confirmă parola</label>
               <div className="relative">
                 <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#BC8157]/60" />
                 <input type={showPass ? "text" : "password"} value={confirm}
@@ -107,8 +107,8 @@ function ResetPasswordForm() {
           <div className="w-16 h-16 rounded-full bg-green-900/30 border border-green-700/30 flex items-center justify-center mx-auto mb-6">
             <CheckCircle size={32} className="text-green-400" />
           </div>
-          <h2 className="font-display text-2xl text-[#f0ddc8] mb-3">Parolă schimbată!</h2>
-          <p className="text-[#f0ddc8]/55 text-sm leading-relaxed mb-8">
+          <h2 className="font-display text-2xl text-[var(--text)] mb-3">Parolă schimbată!</h2>
+          <p className="text-[var(--text-55)] text-sm leading-relaxed mb-8">
             Parola ta a fost actualizată. Vei fi redirecționat la autentificare...
           </p>
           <Link href="/login"
@@ -126,7 +126,7 @@ export default function ResetPasswordPage() {
     <div className="section-warm min-h-screen flex items-center justify-center px-4 pt-20">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
         <Link href="/login"
-          className="inline-flex items-center gap-2 text-[#f0ddc8]/50 hover:text-[#BC8157] text-sm mb-8 transition-colors">
+          className="inline-flex items-center gap-2 text-[var(--text-50)] hover:text-[#BC8157] text-sm mb-8 transition-colors">
           <ArrowLeft size={16} /> Înapoi la autentificare
         </Link>
         <div className="card rounded-3xl p-8">

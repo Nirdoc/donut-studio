@@ -234,3 +234,42 @@ body::after {
 .animate-float     { animation: float 3s ease-in-out infinite; }
 .animate-spin-slow { animation: spin-slow 20s linear infinite; }
 .animate-marquee   { animation: marquee 25s linear infinite; }
+
+/* ─── Light theme: text visibility overrides ─────── */
+/* These rules are outside @layer and override Tailwind utilities in light mode */
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] h5,
+[data-theme="light"] h6 {
+  color: var(--text);
+}
+
+[data-theme="light"] p {
+  color: var(--text-80);
+}
+
+[data-theme="light"] label {
+  color: var(--label-text);
+}
+
+[data-theme="light"] th {
+  color: var(--text-60);
+}
+
+[data-theme="light"] td {
+  color: var(--text-80);
+}
+/* ─── Light theme: section-dark overrides ────── */
+[data-theme="light"] .section-dark p,
+[data-theme="light"] .section-dark h1,
+[data-theme="light"] .section-dark h2,
+[data-theme="light"] .section-dark h3,
+[data-theme="light"] .section-dark h4,
+[data-theme="light"] .section-dark h5,
+[data-theme="light"] .section-dark h6,
+[data-theme="light"] .section-dark span,
+[data-theme="light"] .section-dark label {
+  color: inherit;
+}

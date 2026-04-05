@@ -31,7 +31,7 @@ export default function EventsSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-14">
           <p className="text-[#BC8157] font-medium text-sm uppercase tracking-widest mb-3">Evenimente</p>
-          <h2 className="font-display text-4xl lg:text-5xl text-[#f0ddc8]">
+          <h2 className="font-display text-4xl lg:text-5xl text-[var(--text)]">
             Perfecte pentru<br />
             <span className="text-[#BC8157]">orice ocazie</span>
           </h2>
@@ -58,8 +58,8 @@ export default function EventsSection() {
                 </div>
               </div>
               <div className="p-6">
-                <h3 className="font-display text-xl text-[#f0ddc8] mb-2">{event.title}</h3>
-                <p className="text-[#f0ddc8]/55 text-sm leading-relaxed">{event.desc}</p>
+                <h3 className="font-display text-xl text-[var(--text)] mb-2">{event.title}</h3>
+                <p className="text-[var(--text-80)] text-sm leading-relaxed">{event.desc}</p>
               </div>
             </motion.div>
           ))}

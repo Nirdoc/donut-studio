@@ -26,7 +26,7 @@ export default function StatsSection() {
               <p className="font-display text-3xl lg:text-4xl text-[#BC8157] mb-2">
                 {stat.number}
               </p>
-              <p className="text-[#f0ddc8]/55 text-sm">{stat.label}</p>
+              <p className="text-[var(--text-80)] text-sm">{stat.label}</p>
             </motion.div>
           ))}
         </div>

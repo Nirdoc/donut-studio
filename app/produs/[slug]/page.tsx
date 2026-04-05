@@ -79,24 +79,24 @@ export default async function ProductPage({
             {/* Info */}
             <div className="p-8 flex flex-col justify-between">
               <div>
-                <h1 className="font-display text-4xl text-[#f0ddc8] mb-3">
+                <h1 className="font-display text-4xl text-[var(--text)] mb-3">
                   {product.name}
                 </h1>
-                <p className="text-[#f0ddc8]/60 leading-relaxed mb-6">
+                <p className="text-[var(--text-60)] leading-relaxed mb-6">
                   {product.description}
                 </p>
 
                 {/* Allergens */}
                 {product.allergens.length > 0 && (
                   <div className="mb-6">
-                    <p className="text-[#f0ddc8]/40 text-xs uppercase tracking-widest mb-2">
+                    <p className="text-[var(--text-40)] text-xs uppercase tracking-widest mb-2">
                       Alergeni
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {product.allergens.map((a) => (
                         <span
                           key={a}
-                          className="text-xs text-[#f0ddc8]/60 bg-[#f0ddc8]/5 px-3 py-1 rounded-full border border-[#f0ddc8]/10"
+                          className="text-xs text-[var(--text-60)] bg-[var(--surface)] px-3 py-1 rounded-full border border-[var(--border)]"
                         >
                           {a}
                         </span>
@@ -108,10 +108,10 @@ export default async function ProductPage({
 
               <div>
                 <div className="flex items-end gap-1 mb-6">
-                  <span className="font-bold text-4xl text-[#f0ddc8]">
+                  <span className="font-bold text-4xl text-[var(--text)]">
                     {product.price}
                   </span>
-                  <span className="text-[#f0ddc8]/40 text-lg mb-1">lei</span>
+                  <span className="text-[var(--text-40)] text-lg mb-1">lei</span>
                 </div>
                 <AddToCartButton product={product} />
               </div>
@@ -123,32 +123,32 @@ export default async function ProductPage({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Ingredients */}
           <div className="card rounded-3xl p-8">
-            <h2 className="font-display text-2xl text-[#f0ddc8] mb-5">
+            <h2 className="font-display text-2xl text-[var(--text)] mb-5">
               Ingrediente
             </h2>
-            <p className="text-[#f0ddc8]/60 text-sm leading-relaxed">
+            <p className="text-[var(--text-60)] text-sm leading-relaxed">
               {product.ingredients.join(", ")}.
             </p>
           </div>
 
           {/* Nutrition */}
           <div className="card rounded-3xl p-8">
-            <h2 className="font-display text-2xl text-[#f0ddc8] mb-5">
+            <h2 className="font-display text-2xl text-[var(--text)] mb-5">
               Valori nutriționale
             </h2>
 
             {/* Table */}
-            <div className="overflow-hidden rounded-2xl border border-[#f0ddc8]/10">
+            <div className="overflow-hidden rounded-2xl border border-[var(--border)]">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#f0ddc8]/10">
-                    <th className="text-left px-4 py-3 text-[#f0ddc8]/40 font-medium text-xs uppercase tracking-wide">
+                  <tr className="border-b border-[var(--border)]">
+                    <th className="text-left px-4 py-3 text-[var(--text-40)] font-medium text-xs uppercase tracking-wide">
                       Nutrient
                     </th>
-                    <th className="text-right px-4 py-3 text-[#f0ddc8]/40 font-medium text-xs uppercase tracking-wide">
+                    <th className="text-right px-4 py-3 text-[var(--text-40)] font-medium text-xs uppercase tracking-wide">
                       Per porție
                     </th>
-                    <th className="text-right px-4 py-3 text-[#f0ddc8]/40 font-medium text-xs uppercase tracking-wide">
+                    <th className="text-right px-4 py-3 text-[var(--text-40)] font-medium text-xs uppercase tracking-wide">
                       Per 100g
                     </th>
                   </tr>
@@ -179,16 +179,16 @@ export default async function ProductPage({
                     <tr
                       key={row.label}
                       className={
-                        i < 3 ? "border-b border-[#f0ddc8]/5" : ""
+                        i < 3 ? "border-b border-[var(--border)]" : ""
                       }
                     >
-                      <td className="px-4 py-3 text-[#f0ddc8]/70">
+                      <td className="px-4 py-3 text-[var(--text-70)]">
                         {row.label}
                       </td>
-                      <td className="px-4 py-3 text-right text-[#f0ddc8] font-medium">
+                      <td className="px-4 py-3 text-right text-[var(--text)] font-medium">
                         {row.serving}
                       </td>
-                      <td className="px-4 py-3 text-right text-[#f0ddc8]/50">
+                      <td className="px-4 py-3 text-right text-[var(--text-50)]">
                         {row.per100}
                       </td>
                     </tr>

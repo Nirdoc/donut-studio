@@ -6,7 +6,7 @@ export default function Footer() {
   return (
     <footer style={{ backgroundColor: "var(--bg-footer)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
           {/* Brand */}
           <div className="lg:col-span-1">
             <div className="mb-4">
@@ -55,6 +55,31 @@ export default function Footer() {
                 { href: "/menu", label: "Meniu" },
                 { href: "/login", label: "Autentificare" },
                 { href: "/register", label: "Cont nou" },
+              ].map((l) => (
+                <li key={l.href}>
+                  <Link
+                    href={l.href}
+                    className="hover:text-[#BC8157] transition-colors text-sm"
+                    style={{ color: "var(--text-60)" }}
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Magazin */}
+          <div>
+            <h4 className="font-semibold mb-4 text-sm uppercase tracking-widest" style={{ color: "var(--text)" }}>
+              Magazin
+            </h4>
+            <ul className="space-y-2">
+              {[
+                { href: "/politica-de-livrare", label: "Politica de livrare" },
+                { href: "/politica-de-retur", label: "Politica de retur" },
+                { href: "/politica-de-confidentialitate", label: "Politica de confidențialitate" },
+                { href: "/modalitati-de-plata", label: "Modalități de plată" },
               ].map((l) => (
                 <li key={l.href}>
                   <Link

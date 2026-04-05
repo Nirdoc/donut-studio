@@ -20,7 +20,7 @@ const contactInfo = [
     label: "Adresă",
     value: "Piața Victoriei, București",
     sub: "Sector 1, București",
-    href: "https://maps.google.com",
+    href: "https://www.google.com/maps/place/Donut+Studio/@44.4523718,26.0776639,17z/data=!3m1!4b1!4m6!3m5!1s0x40b203fa98df641d:0xfbc237c77c774c18!8m2!3d44.4523718!4d26.0802388!16s%2Fg%2F11cr_5r6dq?entry=ttu&g_ep=EgoyMDI2MDQwMS4wIKXMDSoASAFQAw%3D%3D",
   },
   {
     icon: Phone,
@@ -64,6 +64,7 @@ export default function ContactClient() {
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -72,13 +73,28 @@ export default function ContactClient() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    setLoading(false);
-    setSent(true);
+    setError("");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error ?? "A apărut o eroare. Încearcă din nou.");
+      } else {
+        setSent(true);
+      }
+    } catch {
+      setError("Nu s-a putut trimite mesajul. Verifică conexiunea și încearcă din nou.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="min-h-screen text-[#f0ddc8]">
+    <div className="min-h-screen">
 
       {/* ── HERO ─────────────────────────────────────────────── */}
       <section className="section-dark relative overflow-hidden min-h-[55vh] flex items-end pb-20">
@@ -199,7 +215,7 @@ export default function ContactClient() {
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
-                      <label className="block text-sm text-[#f0ddc8]/60 mb-2 font-medium">Nume complet</label>
+                      <label className="block text-sm text-[var(--text-60)] mb-2 font-medium">Nume complet</label>
                       <input
                         name="name"
                         value={form.name}
@@ -210,7 +226,7 @@ export default function ContactClient() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-[#f0ddc8]/60 mb-2 font-medium">Email</label>
+                      <label className="block text-sm text-[var(--text-60)] mb-2 font-medium">Email</label>
                       <input
                         name="email"
                         type="email"
@@ -224,7 +240,7 @@ export default function ContactClient() {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-[#f0ddc8]/60 mb-2 font-medium">Subiect</label>
+                    <label className="block text-sm text-[var(--text-60)] mb-2 font-medium">Subiect</label>
                     <select
                       name="subject"
                       value={form.subject}
@@ -242,7 +258,7 @@ export default function ContactClient() {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-[#f0ddc8]/60 mb-2 font-medium">Mesaj</label>
+                    <label className="block text-sm text-[var(--text-60)] mb-2 font-medium">Mesaj</label>
                     <textarea
                       name="message"
                       value={form.message}
@@ -253,6 +269,12 @@ export default function ContactClient() {
                       className="input-dark w-full rounded-2xl px-5 py-3.5 text-sm resize-none"
                     />
                   </div>
+
+                  {error && (
+                    <div className="bg-red-900/20 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-2xl">
+                      {error}
+                    </div>
+                  )}
 
                   <button
                     type="submit"
@@ -285,7 +307,7 @@ export default function ContactClient() {
               {/* Map placeholder */}
               <div className="card rounded-3xl overflow-hidden aspect-[4/3] relative">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2847.7!2d26.0852!3d44.4534!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40b201ff9eb42c6b%3A0x2a3c9d843f3f0b0!2sPia%C8%9Ba+Victoriei%2C+Bucure%C8%99ti!5e0!3m2!1sro!2sro!4v1"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2848.3!2d26.0776639!3d44.4523718!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40b203fa98df641d%3A0xfbc237c77c774c18!2sDonut%20Studio!5e0!3m2!1sro!2sro!4v1"
                   width="100%"
                   height="100%"
                   style={{ border: 0, filter: "invert(90%) hue-rotate(180deg) saturate(0.7) brightness(0.85)" }}
@@ -309,14 +331,14 @@ export default function ContactClient() {
                       href={s.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group flex items-center gap-4 text-[#f0ddc8]/70 hover:text-[#D4956A] transition-colors"
+                      className="group flex items-center gap-4 text-[var(--text-70)] hover:text-[#D4956A] transition-colors"
                     >
                       <div className="w-10 h-10 rounded-2xl bg-[#BC8157]/15 group-hover:bg-[#BC8157]/25 flex items-center justify-center transition-colors flex-shrink-0">
                         <s.icon size={18} className="text-[#D4956A]" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-white group-hover:text-[#D4956A] transition-colors">{s.label}</p>
-                        <p className="text-xs text-[#f0ddc8]/50">{s.handle}</p>
+                        <p className="text-sm font-semibold text-[var(--text)] group-hover:text-[#D4956A] transition-colors">{s.label}</p>
+                        <p className="text-xs text-[var(--text-50)]">{s.handle}</p>
                       </div>
                       <ArrowRight size={14} className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                     </a>
@@ -362,7 +384,7 @@ export default function ContactClient() {
             </a>
             <a
               href="/evenimente"
-              className="inline-flex items-center justify-center gap-2 border-2 border-white/50 text-white hover:border-white px-8 py-4 rounded-full font-semibold transition-all"
+              className="inline-flex items-center justify-center gap-2 border-2 border-[var(--border-strong)] text-[var(--text-70)] hover:border-[#BC8157] px-8 py-4 rounded-full font-semibold transition-all"
             >
               Evenimente
             </a>
@@ -380,9 +402,9 @@ function CardInner({ item }: { item: typeof contactInfo[0] }) {
       <div className="w-11 h-11 rounded-2xl bg-[#BC8157]/15 flex items-center justify-center mb-5 group-hover:bg-[#BC8157]/25 transition-colors">
         <item.icon size={20} className="text-[#D4956A]" />
       </div>
-      <p className="text-[#f0ddc8]/50 text-xs font-medium uppercase tracking-widest mb-1">{item.label}</p>
-      <p className="text-white font-semibold text-sm leading-snug mb-1">{item.value}</p>
-      <p className="text-[#f0ddc8]/50 text-xs">{item.sub}</p>
+      <p className="text-[var(--text-50)] text-xs font-medium uppercase tracking-widest mb-1">{item.label}</p>
+      <p className="text-[var(--text)] font-semibold text-sm leading-snug mb-1">{item.value}</p>
+      <p className="text-[var(--text-50)] text-xs">{item.sub}</p>
     </>
   );
 }

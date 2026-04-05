@@ -67,7 +67,7 @@ export default function RegisterClient() {
           <p className="text-[#D4956A] font-semibold text-lg mb-6">{form.email}</p>
           <p className="text-white/50 text-sm leading-relaxed mb-10">
             Deschide emailul și apasă pe link pentru a-ți activa contul.
-            Linkul este valabil <strong className="text-white/70">24 de ore</strong>.
+            Linkul este valabil <strong className="text-[var(--text-70)]">24 de ore</strong>.
           </p>
           <Link
             href="/login"
@@ -100,16 +100,16 @@ export default function RegisterClient() {
             className="h-20 w-auto mx-auto mb-10"
             unoptimized
           />
-          <h2 className="font-display text-4xl text-[#f0ddc8] mb-4 leading-tight">
+          <h2 className="font-display text-4xl text-[var(--text)] mb-4 leading-tight">
             Alătură-te<br />comunității noastre!
           </h2>
-          <p className="text-[#f0ddc8]/60 max-w-xs mx-auto mb-10">
+          <p className="text-[var(--text-60)] max-w-xs mx-auto mb-10">
             Creează un cont gratuit și bucură-te de gogoșile noastre artizanale.
           </p>
           <div className="card rounded-2xl p-5 max-w-xs mx-auto text-left">
-            <p className="text-[#f0ddc8]/80 font-semibold text-sm mb-3">Beneficii cont:</p>
+            <p className="text-[var(--text-80)] font-semibold text-sm mb-3">Beneficii cont:</p>
             {["Istoric comenzi", "Adrese salvate", "Oferte exclusive", "Comandă rapidă"].map((b) => (
-              <div key={b} className="flex items-center gap-2 text-[#f0ddc8]/60 text-sm mb-2">
+              <div key={b} className="flex items-center gap-2 text-[var(--text-60)] text-sm mb-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#BC8157]" />
                 {b}
               </div>
@@ -129,8 +129,8 @@ export default function RegisterClient() {
             />
           </div>
 
-          <h1 className="font-display text-3xl text-[#f0ddc8] mb-2">Creează cont</h1>
-          <p className="text-[#f0ddc8]/50 text-sm mb-8">
+          <h1 className="font-display text-3xl text-[var(--text)] mb-2">Creează cont</h1>
+          <p className="text-[var(--text-50)] text-sm mb-8">
             Ai deja cont?{" "}
             <Link href="/login" className="text-[#BC8157] font-medium hover:underline">Autentifică-te</Link>
           </p>
@@ -144,7 +144,7 @@ export default function RegisterClient() {
               { name: "email", label: "Email", placeholder: "email@exemplu.ro", Icon: Mail, type: "email" },
             ].map((f) => (
               <div key={f.name}>
-                <label className="block text-sm font-medium text-[#f0ddc8]/70 mb-1.5">{f.label}</label>
+                <label className="block text-sm font-medium text-[var(--text-70)] mb-1.5">{f.label}</label>
                 <div className="relative">
                   <f.Icon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#BC8157]/60" />
                   <input name={f.name} type={f.type} value={form[f.name as keyof typeof form]}
@@ -154,20 +154,20 @@ export default function RegisterClient() {
               </div>
             ))}
             <div>
-              <label className="block text-sm font-medium text-[#f0ddc8]/70 mb-1.5">Parolă</label>
+              <label className="block text-sm font-medium text-[var(--text-70)] mb-1.5">Parolă</label>
               <div className="relative">
                 <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#BC8157]/60" />
                 <input name="password" type={showPass ? "text" : "password"}
                   value={form.password} onChange={handleChange} placeholder="Minim 6 caractere"
                   className="w-full pl-11 pr-12 py-3.5 input-dark rounded-2xl text-sm" />
                 <button type="button" onClick={() => setShowPass(!showPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#f0ddc8]/40 hover:text-[#f0ddc8]">
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-40)] hover:text-[var(--text)]">
                   {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#f0ddc8]/70 mb-1.5">Confirmă parola</label>
+              <label className="block text-sm font-medium text-[var(--text-70)] mb-1.5">Confirmă parola</label>
               <div className="relative">
                 <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#BC8157]/60" />
                 <input name="confirm" type={showPass ? "text" : "password"}
@@ -180,7 +180,7 @@ export default function RegisterClient() {
               {loading ? "Se creează contul..." : "Creează cont"}
             </button>
           </form>
-          <p className="mt-6 text-center text-xs text-[#f0ddc8]/30">
+          <p className="mt-6 text-center text-xs text-[var(--text-30)]">
             Prin înregistrare ești de acord cu <span className="underline cursor-pointer">Termenii și condițiile</span> noastre.
           </p>
         </motion.div>

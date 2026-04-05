@@ -86,7 +86,7 @@ export default function HeroSection() {
               </Link>
               <Link
                 href="/register"
-                className="inline-flex items-center gap-2 border border-white/20 hover:border-[#BC8157] text-white hover:text-[#BC8157] px-8 py-4 rounded-full font-semibold transition-all"
+                className="inline-flex items-center gap-2 border border-[var(--border-mid)] hover:border-[#BC8157] text-[var(--text-70)] hover:text-[#BC8157] px-8 py-4 rounded-full font-semibold transition-all"
               >
                 Creează cont
               </Link>
@@ -139,13 +139,13 @@ export default function HeroSection() {
                 initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.7 }}
-                className="absolute -top-4 -left-16 bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-3 flex items-center gap-3 shadow-xl"
+                className="absolute -top-4 -left-16 bg-[var(--surface-mid)] backdrop-blur-md border border-[var(--border)] rounded-2xl p-3 flex items-center gap-3 shadow-xl"
               >
                 <div className="w-10 h-10 rounded-xl overflow-hidden">
                   <Image src="https://www.donutstudio.ro/wp-content/uploads/2021/08/Raspberry-Blast.webp" alt="Raspberry Blast" width={40} height={40} className="object-cover w-full h-full" />
                 </div>
                 <div>
-                  <p className="font-semibold text-xs text-white">Raspberry Blast</p>
+                  <p className="font-semibold text-xs text-[var(--text)]">Raspberry Blast</p>
                   <p className="text-[#BC8157] font-bold text-sm">12 lei</p>
                 </div>
               </motion.div>
@@ -155,13 +155,13 @@ export default function HeroSection() {
                 initial={{ opacity: 0, x: 30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.9 }}
-                className="absolute -bottom-4 -right-10 bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-3 flex items-center gap-3 shadow-xl"
+                className="absolute -bottom-4 -right-10 bg-[var(--surface-mid)] backdrop-blur-md border border-[var(--border)] rounded-2xl p-3 flex items-center gap-3 shadow-xl"
               >
                 <div className="w-10 h-10 rounded-xl overflow-hidden">
                   <Image src="https://www.donutstudio.ro/wp-content/uploads/2024/07/Pistachious.webp" alt="Pistachious" width={40} height={40} className="object-cover w-full h-full" />
                 </div>
                 <div>
-                  <p className="font-semibold text-xs text-white">Pistachious</p>
+                  <p className="font-semibold text-xs text-[var(--text)]">Pistachious</p>
                   <p className="text-[#BC8157] font-bold text-sm">12 lei</p>
                 </div>
               </motion.div>

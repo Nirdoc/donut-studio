@@ -102,7 +102,7 @@ export default function EvenimenteClient() {
           <motion.span
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 bg-[#BC8157]/20 text-[#BC8157] px-4 py-1.5 rounded-full text-sm font-medium mb-6 border border-[#BC8157]/30"
+            className="inline-flex items-center gap-2 bg-white/50 text-white/ px-4 py-1.5 rounded-full text-sm font-medium mb-6 border border-white/20"
           >
             ✦ Servicii evenimente
           </motion.span>
@@ -122,7 +122,7 @@ export default function EvenimenteClient() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-white/65 text-lg max-w-xl leading-relaxed mb-10"
+            className="!text-white opacity-65 text-lg max-w-xl leading-relaxed mb-10"
           >
             Transformăm orice eveniment într-o experiență de neuitat prin
             gogoși artizanale premium, prezentare elegantă și servicii
@@ -143,7 +143,7 @@ export default function EvenimenteClient() {
             </a>
             <a
               href="mailto:contact@donutstudio.ro"
-              className="inline-flex items-center gap-2 border border-white/20 text-white hover:border-[#BC8157] hover:text-[#BC8157] px-8 py-4 rounded-full font-semibold transition-all"
+              className="inline-flex items-center gap-2 border border-white/30 text-white/80 hover:border-[#BC8157] hover:text-[#BC8157] px-8 py-4 rounded-full font-semibold transition-all"
             >
               <Mail size={17} />
               Trimite email
@@ -168,7 +168,7 @@ export default function EvenimenteClient() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <p className="text-[#BC8157] text-sm font-medium uppercase tracking-widest mb-3">Ce oferim</p>
-            <h2 className="font-display text-4xl lg:text-6xl text-[#E8C9A0]">
+            <h2 className="font-display text-4xl lg:text-6xl text-[var(--text)]">
               Perfecte pentru
               <br />
               <span className="text-[#9A6540]">orice ocazie</span>
@@ -197,8 +197,8 @@ export default function EvenimenteClient() {
                   <div className="w-11 h-11 rounded-2xl bg-[#BC8157] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <s.icon size={20} className="text-white" />
                   </div>
-                  <h3 className="font-display text-3xl text-white mb-2">{s.title}</h3>
-                  <p className="text-[#F0EBE1] text-sm leading-relaxed max-w-xs">
+                  <h3 className="font-display text-3xl mb-2" style={{ color: "white" }}>{s.title}</h3>
+                  <p style={{ color: "rgba(240,235,225,0.9)" }} className="text-sm leading-relaxed max-w-xs">
                     {s.desc}
                   </p>
                 </div>
@@ -268,7 +268,7 @@ export default function EvenimenteClient() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.08 }}
-                    className="flex items-center gap-3 text-white/80 text-sm"
+                    className="flex items-center gap-3 text-[var(--text-80)] text-sm"
                   >
                     <div className="w-5 h-5 rounded-full bg-[#BC8157] flex items-center justify-center flex-shrink-0">
                       <Check size={11} className="text-white" />
@@ -281,7 +281,7 @@ export default function EvenimenteClient() {
               <div className="flex items-center gap-3 p-4 rounded-2xl bg-[#BC8157]/10 border border-[#BC8157]/20">
                 <MapPin size={18} className="text-[#BC8157] flex-shrink-0" />
                 <p className="text-white/70 text-sm">
-                  Livrăm la evenimentul tău în <strong className="text-white">raza de 250 km</strong> față de București.
+                  Livrăm la evenimentul tău în <strong className="text-[var(--text)]">raza de 250 km</strong> față de București.
                   Costurile de transport variază în funcție de distanță.
                 </p>
               </div>
@@ -377,7 +377,7 @@ export default function EvenimenteClient() {
             </a>
             <a
               href="mailto:contact@donutstudio.ro"
-              className="inline-flex items-center justify-center gap-2 border border-white/20 text-white hover:border-[#BC8157] hover:text-[#BC8157] px-8 py-4 rounded-full font-semibold transition-all"
+              className="inline-flex items-center justify-center gap-2 border border-[var(--border-mid)] text-[var(--text-70)] hover:border-[#BC8157] hover:text-[#BC8157] px-8 py-4 rounded-full font-semibold transition-all"
             >
               <Mail size={17} />
               contact@donutstudio.ro

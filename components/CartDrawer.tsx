@@ -107,14 +107,52 @@ export default function CartDrawer() {
             {/* Footer */}
             {items.length > 0 && (
               <div className="px-6 py-6 border-t border-[#BC8157]/10 space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm" style={{ color: "var(--text-60)" }}>Total</span>
-                  <span className="font-bold text-2xl" style={{ color: "var(--text)" }}>{totalPrice().toFixed(2)} lei</span>
-                </div>
-                <Link href="/checkout" onClick={closeCart}
-                  className="block w-full bg-[#BC8157] hover:bg-[#9a6540] text-white text-center py-4 rounded-2xl font-semibold transition-colors">
-                  Finalizează comanda
-                </Link>
+                {/* Minimum order progress */}
+                {(() => {
+                  const totalQty = items.reduce((s, i) => s + i.quantity, 0);
+                  const MIN = 16;
+                  const canCheckout = totalQty >= MIN;
+                  const pct = Math.min((totalQty / MIN) * 100, 100);
+                  return (
+                    <>
+                      {!canCheckout && (
+                        <div className="rounded-2xl p-3 space-y-2" style={{ background: "var(--surface)" }}>
+                          <div className="flex items-center justify-between text-xs" style={{ color: "var(--text-60)" }}>
+                            <span>Minim {MIN} donuts</span>
+                            <span style={{ color: "var(--text)" }}><strong>{totalQty}</strong> / {MIN}</span>
+                          </div>
+                          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${pct}%` }}
+                              transition={{ duration: 0.4 }}
+                              className="h-full rounded-full bg-[#BC8157]"
+                            />
+                          </div>
+                          <p className="text-xs" style={{ color: "var(--text-50)" }}>
+                            Mai adaugă <strong style={{ color: "var(--text)" }}>{MIN - totalQty} donut{MIN - totalQty !== 1 ? "s" : ""}</strong> pentru a finaliza comanda.
+                          </p>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm" style={{ color: "var(--text-60)" }}>Total</span>
+                        <span className="font-bold text-2xl" style={{ color: "var(--text)" }}>{totalPrice().toFixed(2)} lei</span>
+                      </div>
+                      {canCheckout ? (
+                        <Link href="/checkout" onClick={closeCart}
+                          className="block w-full bg-[#BC8157] hover:bg-[#9a6540] text-white text-center py-4 rounded-2xl font-semibold transition-colors">
+                          Finalizează comanda
+                        </Link>
+                      ) : (
+                        <div
+                          className="block w-full text-white text-center py-4 rounded-2xl font-semibold opacity-40 cursor-not-allowed select-none"
+                          style={{ background: "#BC8157" }}>
+                          Finalizează comanda
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
                 <button onClick={closeCart}
                   className="block w-full text-center text-sm hover:text-[var(--text)] transition-colors"
                   style={{ color: "var(--text-40)" }}>

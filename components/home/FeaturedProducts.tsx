@@ -12,7 +12,7 @@ export default function FeaturedProducts() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
           <div>
             <p className="text-[#BC8157] font-medium text-sm uppercase tracking-widest mb-2">Bestsellers</p>
-            <h2 className="font-display text-4xl lg:text-5xl text-[#f0ddc8]">
+            <h2 className="font-display text-4xl lg:text-5xl text-[var(--text)]">
               Cele mai iubite<br />
               <span className="text-[#BC8157]">arome</span>
             </h2>

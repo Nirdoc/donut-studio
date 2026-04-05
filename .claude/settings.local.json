@@ -28,7 +28,24 @@
       "Bash(echo \"Studio PID: $!\")",
       "Bash(curl -s http://localhost:5555)",
       "Bash(curl -sI http://localhost:5555)",
-      "Bash(DATABASE_URL=\"file:./prisma/dev.db\" PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"da\" npx prisma:*)"
+      "Bash(DATABASE_URL=\"file:./prisma/dev.db\" PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"da\" npx prisma:*)",
+      "Bash(grep:*)",
+      "Bash(perl -i -pe 's/text-\\\\[var\\\\\\(--text-\\(\\\\d+\\)\\(?!\\\\\\)\\)/text-[var\\(--text-$1\\)/g; s/text-\\\\[var\\\\\\(--text-\\(\\\\d+\\)\\\\\\)\\(?!\\\\]\\)/text-[var\\(--text-$1\\)]/g' '/Users/codrin.ene/vsc/donut-studio/app/produs/[slug]/page.tsx')",
+      "Bash(perl -i -pe 's/bg-\\\\[#f0ddc8\\\\]\\\\/5/bg-\\\\[var\\(--surface\\)\\\\]/g;:*)",
+      "Bash(perl -i -pe 's/text-\\\\[#f0ddc8\\\\]\\\\/20/text-[var\\(--text-20\\)]/g;:*)",
+      "Bash(perl -i -pe 's/ text-\\\\[#f0ddc8\\\\]$/ text-[var\\(--text\\)]/g;:*)",
+      "Bash(perl -i -pe 's/text-\\\\[#f0ddc8\\\\]\\\\/80/text-[var\\(--text-80\\)]/g;:*)",
+      "Bash(perl -i -pe 's/text-\\\\[#f0ddc8\\\\]\\\\/60/text-[var\\(--text-60\\)]/g' \"/Users/codrin.ene/vsc/donut-studio/app/contact/ContactClient.tsx\")",
+      "Bash(perl -i -pe 's/border-2 border-white\\\\/50 text-white hover:border-white/border-2 border-[var\\(--border-strong\\)] text-[var\\(--text-70\\)] hover:border-[#BC8157]/g' \"/Users/codrin.ene/vsc/donut-studio/app/povestea-noastra/PovesteaClient.tsx\")",
+      "Bash(perl -i -pe 's/gap-2 text-white text-sm/gap-2 text-[var\\(--text-80\\)] text-sm/g;:*)",
+      "Bash(perl -i -pe 's/border border-white\\\\/20 text-white hover:border-\\\\[#BC8157\\\\] hover:text-\\\\[#BC8157\\\\]/border border-[var\\(--border-mid\\)] text-[var\\(--text-70\\)] hover:border-[#BC8157] hover:text-[#BC8157]/g' \"/Users/codrin.ene/vsc/donut-studio/app/evenimente/EvenimenteClient.tsx\")",
+      "Bash(perl -i -pe 's/<strong className=\"text-white\\\\/70\">/<strong className=\"text-[var\\(--text-70\\)]\">/g' \"/Users/codrin.ene/vsc/donut-studio/app/register/RegisterClient.tsx\")",
+      "Bash(curl -s \"https://www.donutstudio.ro/politica-de-confidentialitate/\")",
+      "Bash(python3 -c ':*)",
+      "Bash(curl -s \"https://www.donutstudio.ro/politica-de-livrare/\")",
+      "Bash(curl -s \"https://www.donutstudio.ro/modalitati-de-plata/\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:v for k,v in {**d.get\\('dependencies',{}\\),**d.get\\('devDependencies',{}\\)}.items\\(\\) if any\\(x in k for x in ['mail','email','nodemailer','resend','sendgrid']\\)}, indent=2\\)\\)\")",
+      "Bash(ls /Users/codrin.ene/vsc/donut-studio/.env*)"
     ]
   }
 }

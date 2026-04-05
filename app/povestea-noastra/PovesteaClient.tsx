@@ -399,7 +399,7 @@ export default function PovesteaClient() {
             </Link>
             <Link
               href="/evenimente"
-              className="inline-flex items-center justify-center gap-2 border-2 border-white/50 text-white hover:border-white px-8 py-4 rounded-full font-semibold transition-all"
+              className="inline-flex items-center justify-center gap-2 border-2 border-[var(--border-strong)] text-[var(--text-70)] hover:border-[#BC8157] px-8 py-4 rounded-full font-semibold transition-all"
               // SCHIMBAT: border-white/30 → border-white/50 — mai vizibil
             >
               Evenimente

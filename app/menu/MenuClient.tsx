@@ -101,7 +101,7 @@ export default function MenuClient({ products }: { products: Product[] }) {
         </div>
 
         {/* Results count */}
-        <p className="text-[#f0ddc8]/40 text-sm mb-6">
+        <p className="text-[var(--text-40)] text-sm mb-6">
           {filtered.length} {filtered.length === 1 ? "produs" : "produse"}
         </p>
 
@@ -128,10 +128,10 @@ export default function MenuClient({ products }: { products: Product[] }) {
 
         {/* Info box */}
         <div className="mt-16 card rounded-3xl p-8 text-center">
-          <p className="text-[#f0ddc8] font-semibold mb-2">
+          <p className="text-[var(--text)] font-semibold mb-2">
             Comandă pentru evenimente?
           </p>
-          <p className="text-[#f0ddc8]/55 text-sm mb-4">
+          <p className="text-[var(--text-55)] text-sm mb-4">
             Oferim cutii cu mini-gogoși asortate, donut walls și servicii
             complete de catering pentru nunți, botezuri și corporate events.
           </p>

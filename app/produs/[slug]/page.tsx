@@ -1,0 +1,204 @@
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ArrowLeft, ShoppingBag } from "lucide-react";
+import { products } from "@/lib/products";
+import AddToCartButton from "./AddToCartButton";
+
+export function generateStaticParams() {
+  return products.map((p) => ({ slug: p.slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const product = products.find((p) => p.slug === slug);
+  if (!product) return {};
+  return { title: `${product.name} – Donut Studio` };
+}
+
+const categoryColors: Record<string, string> = {
+  classic: "bg-amber-900/50 text-amber-300 border border-amber-700/30",
+  fruity: "bg-pink-900/50 text-pink-300 border border-pink-700/30",
+  premium: "bg-purple-900/50 text-purple-300 border border-purple-700/30",
+};
+const categoryLabels: Record<string, string> = {
+  classic: "Clasic",
+  fruity: "Fructat",
+  premium: "Premium",
+};
+
+export default async function ProductPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const product = products.find((p) => p.slug === slug);
+  if (!product) notFound();
+
+  const { nutrition } = product;
+
+  return (
+    <div className="section-base min-h-screen pt-24 pb-16">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Back */}
+        <Link
+          href="/menu"
+          className="inline-flex items-center gap-2 text-[#BC8157] text-sm font-medium mb-8 hover:gap-3 transition-all"
+        >
+          <ArrowLeft size={16} />
+          Înapoi la meniu
+        </Link>
+
+        {/* Hero card */}
+        <div className="card rounded-3xl overflow-hidden mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2">
+            {/* Image */}
+            <div className="relative h-72 md:h-auto md:min-h-[420px]">
+              <Image
+                src={product.image}
+                alt={product.name}
+                fill
+                className="object-cover"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+              <div className="absolute top-4 left-4">
+                <span
+                  className={`text-xs font-medium px-2.5 py-1 rounded-full ${categoryColors[product.category]}`}
+                >
+                  {categoryLabels[product.category]}
+                </span>
+              </div>
+            </div>
+
+            {/* Info */}
+            <div className="p-8 flex flex-col justify-between">
+              <div>
+                <h1 className="font-display text-4xl text-[#f0ddc8] mb-3">
+                  {product.name}
+                </h1>
+                <p className="text-[#f0ddc8]/60 leading-relaxed mb-6">
+                  {product.description}
+                </p>
+
+                {/* Allergens */}
+                {product.allergens.length > 0 && (
+                  <div className="mb-6">
+                    <p className="text-[#f0ddc8]/40 text-xs uppercase tracking-widest mb-2">
+                      Alergeni
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {product.allergens.map((a) => (
+                        <span
+                          key={a}
+                          className="text-xs text-[#f0ddc8]/60 bg-[#f0ddc8]/5 px-3 py-1 rounded-full border border-[#f0ddc8]/10"
+                        >
+                          {a}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div className="flex items-end gap-1 mb-6">
+                  <span className="font-bold text-4xl text-[#f0ddc8]">
+                    {product.price}
+                  </span>
+                  <span className="text-[#f0ddc8]/40 text-lg mb-1">lei</span>
+                </div>
+                <AddToCartButton product={product} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Ingredients */}
+          <div className="card rounded-3xl p-8">
+            <h2 className="font-display text-2xl text-[#f0ddc8] mb-5">
+              Ingrediente
+            </h2>
+            <p className="text-[#f0ddc8]/60 text-sm leading-relaxed">
+              {product.ingredients.join(", ")}.
+            </p>
+          </div>
+
+          {/* Nutrition */}
+          <div className="card rounded-3xl p-8">
+            <h2 className="font-display text-2xl text-[#f0ddc8] mb-5">
+              Valori nutriționale
+            </h2>
+
+            {/* Table */}
+            <div className="overflow-hidden rounded-2xl border border-[#f0ddc8]/10">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[#f0ddc8]/10">
+                    <th className="text-left px-4 py-3 text-[#f0ddc8]/40 font-medium text-xs uppercase tracking-wide">
+                      Nutrient
+                    </th>
+                    <th className="text-right px-4 py-3 text-[#f0ddc8]/40 font-medium text-xs uppercase tracking-wide">
+                      Per porție
+                    </th>
+                    <th className="text-right px-4 py-3 text-[#f0ddc8]/40 font-medium text-xs uppercase tracking-wide">
+                      Per 100g
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    {
+                      label: "Energie",
+                      serving: `${nutrition.perServing.kcal} kcal`,
+                      per100: `${nutrition.per100g.kcal} kcal`,
+                    },
+                    {
+                      label: "Grăsimi",
+                      serving: `${nutrition.perServing.fat} g`,
+                      per100: `${nutrition.per100g.fat} g`,
+                    },
+                    {
+                      label: "Carbohidrați",
+                      serving: `${nutrition.perServing.carbs} g`,
+                      per100: `${nutrition.per100g.carbs} g`,
+                    },
+                    {
+                      label: "Proteine",
+                      serving: `${nutrition.perServing.protein} g`,
+                      per100: `${nutrition.per100g.protein} g`,
+                    },
+                  ].map((row, i) => (
+                    <tr
+                      key={row.label}
+                      className={
+                        i < 3 ? "border-b border-[#f0ddc8]/5" : ""
+                      }
+                    >
+                      <td className="px-4 py-3 text-[#f0ddc8]/70">
+                        {row.label}
+                      </td>
+                      <td className="px-4 py-3 text-right text-[#f0ddc8] font-medium">
+                        {row.serving}
+                      </td>
+                      <td className="px-4 py-3 text-right text-[#f0ddc8]/50">
+                        {row.per100}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

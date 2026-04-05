@@ -75,18 +75,41 @@ export const useCartStore = create<CartStore>()(
   )
 );
 
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
 interface AuthStore {
-  user: { name: string; email: string } | null;
-  login: (name: string, email: string) => void;
+  user: AuthUser | null;
+  token: string | null;
+  login: (user: AuthUser, token: string) => void;
   logout: () => void;
 }
+
+interface ThemeStore {
+  theme: "dark" | "light";
+  toggle: () => void;
+}
+
+export const useThemeStore = create<ThemeStore>()(
+  persist(
+    (set, get) => ({
+      theme: "dark",
+      toggle: () => set({ theme: get().theme === "dark" ? "light" : "dark" }),
+    }),
+    { name: "donut-theme" }
+  )
+);
 
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set) => ({
       user: null,
-      login: (name, email) => set({ user: { name, email } }),
-      logout: () => set({ user: null }),
+      token: null,
+      login: (user, token) => set({ user, token }),
+      logout: () => set({ user: null, token: null }),
     }),
     { name: "donut-auth" }
   )

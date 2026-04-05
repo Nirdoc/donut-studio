@@ -251,7 +251,7 @@ export default function CheckoutClient() {
           {/* Order summary */}
           <div className="lg:col-span-1">
             <div className="card rounded-3xl p-6 sticky top-24">
-              <h3 className="font-semibold text-[#1a1008] mb-4">Sumarul comenzii</h3>
+              <h3 className="font-semibold text-white mb-4">Sumarul comenzii</h3>
               <div className="space-y-3 mb-5">
                 {items.map((item) => (
                   <div key={item.product.id} className="flex items-center gap-3">
@@ -259,8 +259,8 @@ export default function CheckoutClient() {
                       <Image src={item.product.image} alt={item.product.name} fill className="object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[#1a1008] truncate">{item.product.name}</p>
-                      <p className="text-xs text-[#f0ddc8]/45">× {item.quantity}</p>
+                      <p className="text-sm font-medium text-white truncate">{item.product.name}</p>
+                      <p className="text-xs text-white">× {item.quantity}</p>
                     </div>
                     <p className="text-sm font-semibold text-[#f0ddc8]">
                       {(item.product.price * item.quantity).toFixed(2)} lei
@@ -277,7 +277,7 @@ export default function CheckoutClient() {
                   <span>Livrare</span>
                   <span className="text-green-600 font-medium">Gratuită</span>
                 </div>
-                <div className="flex justify-between font-bold text-[#1a1008] text-lg pt-2">
+                <div className="flex justify-between font-bold text-white text-lg pt-2">
                   <span>Total</span>
                   <span>{totalPrice().toFixed(2)} lei</span>
                 </div>

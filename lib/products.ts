@@ -1,3 +1,10 @@
+export interface Nutrition {
+  kcal: number;
+  fat: number;
+  carbs: number;
+  protein: number;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -9,6 +16,10 @@ export interface Product {
   allergens: string[];
   calories: number;
   category: "classic" | "fruity" | "premium";
+  nutrition: {
+    perServing: Nutrition;
+    per100g: Nutrition;
+  };
 }
 
 export const products: Product[] = [
@@ -24,6 +35,10 @@ export const products: Product[] = [
     allergens: ["Ouă", "Lapte", "Gluten"],
     calories: 256,
     category: "classic",
+    nutrition: {
+      perServing: { kcal: 256, fat: 13.44, carbs: 29.03, protein: 4.28 },
+      per100g: { kcal: 427, fat: 22.4, carbs: 48.38, protein: 7.13 },
+    },
   },
   {
     id: "2",
@@ -37,6 +52,10 @@ export const products: Product[] = [
     allergens: ["Ouă", "Lapte", "Gluten"],
     calories: 225,
     category: "classic",
+    nutrition: {
+      perServing: { kcal: 225, fat: 8.37, carbs: 35.26, protein: 3.18 },
+      per100g: { kcal: 375, fat: 13.95, carbs: 58.77, protein: 5.3 },
+    },
   },
   {
     id: "3",
@@ -50,6 +69,10 @@ export const products: Product[] = [
     allergens: ["Ouă", "Lapte", "Gluten", "Soia"],
     calories: 163,
     category: "fruity",
+    nutrition: {
+      perServing: { kcal: 163, fat: 7.39, carbs: 21.48, protein: 2.4 },
+      per100g: { kcal: 354, fat: 16.07, carbs: 46.7, protein: 5.22 },
+    },
   },
   {
     id: "4",
@@ -63,6 +86,10 @@ export const products: Product[] = [
     allergens: ["Ouă", "Lapte", "Gluten", "Soia"],
     calories: 174,
     category: "fruity",
+    nutrition: {
+      perServing: { kcal: 174, fat: 8.46, carbs: 21.52, protein: 2.4 },
+      per100g: { kcal: 395, fat: 19.23, carbs: 48.91, protein: 5.45 },
+    },
   },
   {
     id: "5",
@@ -76,6 +103,10 @@ export const products: Product[] = [
     allergens: ["Ouă", "Lapte", "Gluten"],
     calories: 154,
     category: "classic",
+    nutrition: {
+      perServing: { kcal: 154, fat: 7.95, carbs: 17.01, protein: 2.68 },
+      per100g: { kcal: 384, fat: 19.87, carbs: 42.53, protein: 6.7 },
+    },
   },
   {
     id: "6",
@@ -89,6 +120,10 @@ export const products: Product[] = [
     allergens: ["Ouă", "Lapte", "Gluten", "Migdale"],
     calories: 178,
     category: "premium",
+    nutrition: {
+      perServing: { kcal: 178, fat: 9.95, carbs: 17.87, protein: 4.11 },
+      per100g: { kcal: 405, fat: 22.61, carbs: 40.61, protein: 9.34 },
+    },
   },
   {
     id: "7",
@@ -102,6 +137,10 @@ export const products: Product[] = [
     allergens: ["Ouă", "Lapte", "Gluten", "Soia"],
     calories: 173,
     category: "classic",
+    nutrition: {
+      perServing: { kcal: 173, fat: 8.73, carbs: 20.75, protein: 2.93 },
+      per100g: { kcal: 392, fat: 19.84, carbs: 47.16, protein: 6.66 },
+    },
   },
   {
     id: "8",
@@ -115,6 +154,10 @@ export const products: Product[] = [
     allergens: ["Ouă", "Lapte", "Gluten"],
     calories: 151,
     category: "classic",
+    nutrition: {
+      perServing: { kcal: 151, fat: 4.61, carbs: 23.85, protein: 2.36 },
+      per100g: { kcal: 342, fat: 10.48, carbs: 54.2, protein: 5.36 },
+    },
   },
   {
     id: "9",
@@ -128,6 +171,10 @@ export const products: Product[] = [
     allergens: ["Ouă", "Lapte", "Gluten"],
     calories: 156,
     category: "fruity",
+    nutrition: {
+      perServing: { kcal: 156, fat: 4.47, carbs: 26.05, protein: 2.18 },
+      per100g: { kcal: 279, fat: 7.98, carbs: 46.52, protein: 3.89 },
+    },
   },
   {
     id: "10",
@@ -141,6 +188,10 @@ export const products: Product[] = [
     allergens: ["Ouă", "Lapte", "Gluten", "Fistic", "Alune", "Soia"],
     calories: 176,
     category: "premium",
+    nutrition: {
+      perServing: { kcal: 176, fat: 9.03, carbs: 20.74, protein: 2.8 },
+      per100g: { kcal: 400, fat: 20.52, carbs: 47.14, protein: 6.36 },
+    },
   },
   {
     id: "11",
@@ -154,6 +205,10 @@ export const products: Product[] = [
     allergens: ["Ouă", "Lapte", "Gluten", "Alune"],
     calories: 173,
     category: "premium",
+    nutrition: {
+      perServing: { kcal: 173, fat: 6.55, carbs: 25.32, protein: 3 },
+      per100g: { kcal: 346, fat: 13.1, carbs: 50.64, protein: 6 },
+    },
   },
   {
     id: "12",
@@ -167,6 +222,10 @@ export const products: Product[] = [
     allergens: ["Ouă", "Lapte", "Gluten"],
     calories: 134,
     category: "premium",
+    nutrition: {
+      perServing: { kcal: 134, fat: 6.43, carbs: 16.7, protein: 2.42 },
+      per100g: { kcal: 352, fat: 16.93, carbs: 43.95, protein: 6.38 },
+    },
   },
   {
     id: "13",
@@ -180,5 +239,9 @@ export const products: Product[] = [
     allergens: ["Ouă", "Lapte", "Gluten"],
     calories: 155,
     category: "fruity",
+    nutrition: {
+      perServing: { kcal: 155, fat: 4.49, carbs: 25.91, protein: 2.25 },
+      per100g: { kcal: 309, fat: 8.98, carbs: 51.82, protein: 4.5 },
+    },
   },
 ];

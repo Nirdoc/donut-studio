@@ -64,8 +64,8 @@ export default function AccountClient() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
           <div>
             <h1 className="font-display text-4xl text-[#f0ddc8]">Contul meu</h1>
-            <p className="text-[#1a1008]/50 text-sm mt-1">
-              Bună ziua, {user.name}! 👋
+            <p className="text-white text-sm mt-1">
+              Hei, {user.name}! 👋
             </p>
           </div>
           <button
@@ -91,17 +91,17 @@ export default function AccountClient() {
                   <User size={24} className="text-white" />
                 </div>
                 <div>
-                  <p className="font-semibold text-[#f0ddc8]">{user.name}</p>
-                  <p className="text-[#1a1008]/50 text-xs">{user.email}</p>
+                  <p className="font-semibold text-white">{user.name}</p>
+                  <p className="text-white text-xs">{user.email}</p>
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-[#1a1008]/60 text-sm">
-                  <Mail size={14} className="text-[#BC8157]" />
+                <div className="flex items-center gap-2 text-white text-sm">
+                  <Mail size={14} className="text-white" />
                   {user.email}
                 </div>
-                <div className="flex items-center gap-2 text-[#1a1008]/60 text-sm">
-                  <ShoppingBag size={14} className="text-[#BC8157]" />
+                <div className="flex items-center gap-2 text-white text-sm">
+                  <ShoppingBag size={14} className="text-white" />
                   {mockOrders.length} comenzi plasate
                 </div>
               </div>
@@ -114,7 +114,7 @@ export default function AccountClient() {
               transition={{ delay: 0.1 }}
               className="card rounded-3xl p-5"
             >
-              <h3 className="font-semibold text-sm text-[#1a1008]/70 mb-3 uppercase tracking-wider">
+              <h3 className="font-semibold text-sm text-white mb-3 uppercase tracking-wider">
                 Acces rapid
               </h3>
               <div className="space-y-1">
@@ -125,7 +125,7 @@ export default function AccountClient() {
                   <Link
                     key={item.label}
                     href={item.href}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#BC8157]/5 transition-colors text-sm text-[#1a1008]/70 hover:text-[#BC8157]"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#BC8157]/5 transition-colors text-sm text-white hover:text-[#BC8157]"
                   >
                     <item.icon size={16} />
                     {item.label}
@@ -166,7 +166,7 @@ export default function AccountClient() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
             >
-              <h2 className="font-display text-2xl text-[#1a1008] mb-5">
+              <h2 className="font-display text-2xl text-white mb-5">
                 Istoricul comenzilor
               </h2>
 
@@ -181,8 +181,8 @@ export default function AccountClient() {
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                       <div>
-                        <p className="font-bold text-[#1a1008] font-mono">{order.id}</p>
-                        <p className="text-[#1a1008]/50 text-xs mt-0.5">{order.date}</p>
+                        <p className="font-bold text-white font-mono">{order.id}</p>
+                        <p className="text-white text-xs mt-0.5">{order.date}</p>
                       </div>
                       <span className={`text-xs font-medium px-3 py-1 rounded-full self-start sm:self-auto ${statusColors[order.status]}`}>
                         {order.status.charAt(0).toUpperCase() + order.status.slice(1)}

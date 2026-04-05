@@ -22,9 +22,24 @@ export default function LoginClient() {
     setError("");
     if (!email || !password) { setError("Completează toate câmpurile."); return; }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    login("Utilizator", email);
-    router.push("/account");
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Eroare necunoscută.");
+      } else {
+        login(data.user, data.token);
+        router.push("/account");
+      }
+    } catch {
+      setError("Nu s-a putut conecta la server. Încearcă din nou.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -38,7 +53,7 @@ export default function LoginClient() {
         <div className="absolute inset-0 opacity-10">
           <Image src="https://www.donutstudio.ro/wp-content/uploads/2024/07/Double-Chocolate.webp"
             alt="" fill className="object-cover" />
-          <div className="absolute inset-0 bg-[#0d0502]/80" />
+          <div className="absolute inset-0 bg-black/80" />
         </div>
         <div className="relative z-10 text-center">
           <Image
@@ -47,8 +62,8 @@ export default function LoginClient() {
             className="h-20 w-auto mx-auto mb-10"
             unoptimized
           />
-          <h2 className="font-display text-4xl text-[#f0ddc8] mb-4 leading-tight">Bine ai revenit!</h2>
-          <p className="text-[#f0ddc8]/60 max-w-xs mx-auto mb-10">
+          <h2 className="font-display text-4xl mb-4 leading-tight" style={{ color: "var(--text)" }}>Bine ai revenit!</h2>
+          <p className="max-w-xs mx-auto mb-10" style={{ color: "var(--text-60)" }}>
             Autentifică-te pentru a-ți accesa contul și a comanda aromat.
           </p>
           <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
@@ -73,12 +88,12 @@ export default function LoginClient() {
             <Image
               src="/logo.svg"
               alt="Donut Studio" width={110} height={55}
-              className="h-12 w-auto brightness-0 invert" unoptimized
+              className="h-12 w-auto logo-adaptive" unoptimized
             />
           </div>
 
-          <h1 className="font-display text-3xl text-[#f0ddc8] mb-2">Autentificare</h1>
-          <p className="text-[#f0ddc8]/50 text-sm mb-8">
+          <h1 className="font-display text-3xl mb-2" style={{ color: "var(--text)" }}>Autentificare</h1>
+          <p className="text-sm mb-8" style={{ color: "var(--text-50)" }}>
             Nu ai cont?{" "}
             <Link href="/register" className="text-[#BC8157] font-medium hover:underline">Creează unul gratuit</Link>
           </p>
@@ -88,7 +103,7 @@ export default function LoginClient() {
               <div className="bg-red-900/30 border border-red-700/40 text-red-400 text-sm px-4 py-3 rounded-2xl">{error}</div>
             )}
             <div>
-              <label className="block text-sm font-medium text-[#f0ddc8]/70 mb-1.5">Email</label>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text-70)" }}>Email</label>
               <div className="relative">
                 <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#BC8157]/60" />
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
@@ -98,7 +113,7 @@ export default function LoginClient() {
             </div>
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-sm font-medium text-[#f0ddc8]/70">Parolă</label>
+                <label className="block text-sm font-medium" style={{ color: "var(--text-70)" }}>Parolă</label>
                 <Link href="/forgot-password" className="text-xs text-[#BC8157] hover:underline">Ai uitat parola?</Link>
               </div>
               <div className="relative">
@@ -107,7 +122,8 @@ export default function LoginClient() {
                   onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
                   className="w-full pl-11 pr-12 py-3.5 input-dark rounded-2xl text-sm" />
                 <button type="button" onClick={() => setShowPass(!showPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#f0ddc8]/40 hover:text-[#f0ddc8]">
+                  className="absolute right-4 top-1/2 -translate-y-1/2 hover:text-[var(--text)] transition-colors"
+                  style={{ color: "var(--text-40)" }}>
                   {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
@@ -117,7 +133,7 @@ export default function LoginClient() {
               {loading ? "Se autentifică..." : "Autentifică-te"}
             </button>
           </form>
-          <p className="mt-8 text-center text-xs text-[#f0ddc8]/30">
+          <p className="mt-8 text-center text-xs" style={{ color: "var(--text-30)" }}>
             Prin autentificare ești de acord cu <span className="underline cursor-pointer">Termenii și condițiile</span> noastre.
           </p>
         </motion.div>

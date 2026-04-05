@@ -9,14 +9,25 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
+    setError("");
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
+    const res = await fetch("/api/auth/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
     setLoading(false);
-    setSent(true);
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error ?? "Eroare necunoscută.");
+    } else {
+      setSent(true);
+    }
   };
 
   return (
@@ -39,6 +50,9 @@ export default function ForgotPasswordPage() {
                   Introdu adresa de email asociată contului tău și îți vom trimite un link pentru resetarea parolei.
                 </p>
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {error && (
+                    <div className="bg-red-900/30 border border-red-700/40 text-red-400 text-sm px-4 py-3 rounded-2xl">{error}</div>
+                  )}
                   <div>
                     <label className="block text-sm font-medium text-[#f0ddc8]/70 mb-1.5">Adresa de email</label>
                     <div className="relative">

@@ -20,7 +20,15 @@
       "Bash(sed -i '' -e 's/className=\"min-h-screen bg-transparent\"/className=\"section-base min-h-screen\"/g' -e 's/bg-premium-dark pt-32/section-dark pt-32/g' -e 's/className=\"section-dark pt-32 pb-20 text-center relative overflow-hidden\">/className=\"section-dark pt-32 pb-20 text-center relative overflow-hidden\">/' app/menu/MenuClient.tsx)",
       "Bash(sed -i '' -e 's/text-\\\\[#1a1008\\\\]\\\\/[0-9]*/&/g' app/menu/MenuClient.tsx)",
       "Bash(sed -i '' -e 's/text-\\\\[#1a1008\\\\]\\\\/50 text-sm mb-6\"/text-[#f0ddc8]\\\\/40 text-sm mb-6\"/g' -e 's/text-\\\\[#1a1008\\\\]\"/text-[#f0ddc8]\"/g' -e 's/text-\\\\[#14090a\\\\]\\\\/70\"/text-[#f0ddc8]\\\\/65\"/g' -e 's/text-\\\\[#14090a\\\\]\"/text-[#f0ddc8]\"/g' -e 's/: \"bg-\\\\[#f5ede3\\\\]\\\\/70 text-\\\\[#14090a\\\\]\\\\/70 border border-\\\\[#BC8157\\\\]\\\\/15 hover:border-\\\\[#BC8157\\\\]\"/: \"card text-[#f0ddc8]\\\\/70 hover:border-[#BC8157]\"/' -e 's/bg-\\\\[#f5ede3\\\\]\\\\/60 text-sm focus:outline-none focus:border-\\\\[#BC8157\\\\] transition-colors\"/input-dark text-sm\"/g' app/menu/MenuClient.tsx)",
-      "Bash(sed -i '' -e 's/bg-\\\\[#BC8157\\\\]\\\\/8 rounded-3xl p-8 text-center border border-\\\\[#BC8157\\\\]\\\\/15/card rounded-3xl p-8 text-center/g' -e 's/text-\\\\[#1a1008\\\\] font-semibold mb-2/text-[#f0ddc8] font-semibold mb-2/g' -e 's/text-\\\\[#1a1008\\\\]\\\\/60 text-sm mb-4/text-[#f0ddc8]\\\\/55 text-sm mb-4/g' app/menu/MenuClient.tsx)"
+      "Bash(sed -i '' -e 's/bg-\\\\[#BC8157\\\\]\\\\/8 rounded-3xl p-8 text-center border border-\\\\[#BC8157\\\\]\\\\/15/card rounded-3xl p-8 text-center/g' -e 's/text-\\\\[#1a1008\\\\] font-semibold mb-2/text-[#f0ddc8] font-semibold mb-2/g' -e 's/text-\\\\[#1a1008\\\\]\\\\/60 text-sm mb-4/text-[#f0ddc8]\\\\/55 text-sm mb-4/g' app/menu/MenuClient.tsx)",
+      "Bash(node:*)",
+      "Bash(npm install:*)",
+      "Bash(npx prisma:*)",
+      "Bash(DATABASE_URL=\"file:./prisma/dev.db\" npx prisma:*)",
+      "Bash(echo \"Studio PID: $!\")",
+      "Bash(curl -s http://localhost:5555)",
+      "Bash(curl -sI http://localhost:5555)",
+      "Bash(DATABASE_URL=\"file:./prisma/dev.db\" PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"da\" npx prisma:*)"
     ]
   }
 }

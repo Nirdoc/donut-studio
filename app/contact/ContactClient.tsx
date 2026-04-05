@@ -32,9 +32,9 @@ const contactInfo = [
   {
     icon: Mail,
     label: "Email",
-    value: "hello@donutstudio.ro",
+    value: "ene.cdr@gmail.com",
     sub: "Răspundem în max. 24h",
-    href: "mailto:hello@donutstudio.ro",
+    href: "mailto:ene.cdr@gmail.com",
   },
   {
     icon: Clock,

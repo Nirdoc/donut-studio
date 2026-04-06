@@ -42,27 +42,27 @@ function OrderRow({ order, index }: { order: Order; index: number }) {
       <button
         type="button"
         onClick={() => setOpen((p) => !p)}
-        className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-white/[0.02] transition-colors group"
+        className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-[#BC8157]/4 transition-colors group"
       >
         {/* Status dot */}
         <span className={`w-2 h-2 rounded-full flex-shrink-0 ${s.dot}`} />
 
         {/* Order number */}
-        <span className="font-mono font-semibold text-sm text-white flex-shrink-0 w-36 truncate">
+        <span className="font-mono font-semibold text-sm text-[var(--text)] flex-shrink-0 w-36 truncate">
           {order.orderNumber}
         </span>
 
         {/* Delivery date */}
-        <span className="hidden sm:flex items-center gap-1.5 text-xs text-white/40 flex-shrink-0">
+        <span className="hidden sm:flex items-center gap-1.5 text-xs text-[var(--text-40)] flex-shrink-0">
           <CalendarDays size={11} />
           {fmtDelivery}
         </span>
 
         {/* Item summary */}
-        <span className="text-xs text-white/40 flex-1 truncate hidden md:block">
+        <span className="text-xs text-[var(--text-40)] flex-1 truncate hidden md:block">
           {order.items.map((i) => `${i.name} ×${i.quantity}`).join("  ·  ")}
         </span>
-        <span className="text-xs text-white/40 md:hidden flex-1">
+        <span className="text-xs text-[var(--text-40)] md:hidden flex-1">
           {totalQty} produs{totalQty !== 1 ? "e" : ""}
         </span>
 
@@ -79,7 +79,7 @@ function OrderRow({ order, index }: { order: Order; index: number }) {
         {/* Chevron */}
         <ChevronDown
           size={15}
-          className={`text-white/30 flex-shrink-0 transition-transform duration-200 group-hover:text-white/60 ${open ? "rotate-180" : ""}`}
+          className={`text-[var(--text-30)] flex-shrink-0 transition-transform duration-200 group-hover:text-[var(--text-60)] ${open ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -94,10 +94,10 @@ function OrderRow({ order, index }: { order: Order; index: number }) {
             transition={{ duration: 0.2, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="px-5 pb-5 border-t border-white/5 pt-4 space-y-3">
+            <div className="px-5 pb-5 border-t border-[var(--border)] pt-4 space-y-3">
 
               {/* Meta row */}
-              <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-white/40">
+              <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-[var(--text-40)]">
                 <span>Plasată: {new Date(order.createdAt).toLocaleDateString("ro-RO", { day: "numeric", month: "long", year: "numeric" })}</span>
                 <span className="sm:hidden">Status: {s.label}</span>
                 <span>Livrare: {fmtDelivery}{order.deliveryTime ? ` · ${order.deliveryTime}` : ""}</span>
@@ -107,12 +107,12 @@ function OrderRow({ order, index }: { order: Order; index: number }) {
               </div>
 
               {/* Items */}
-              <div className="divide-y divide-white/5 rounded-xl overflow-hidden">
+              <div className="divide-y divide-[var(--border)] rounded-xl overflow-hidden">
                 {order.items.map((item, j) => (
-                  <div key={j} className="flex items-center gap-3 py-2.5 px-3 bg-white/[0.03]">
-                    <span className="text-sm text-white/80 flex-1">{item.name}</span>
-                    <span className="text-xs text-white/35 w-8 text-center">×{item.quantity}</span>
-                    <span className="text-sm font-medium text-white/70 w-20 text-right">
+                  <div key={j} className="flex items-center gap-3 py-2.5 px-3 bg-[#BC8157]/4">
+                    <span className="text-sm text-[var(--text-80)] flex-1">{item.name}</span>
+                    <span className="text-xs text-[var(--text-35)] w-8 text-center">×{item.quantity}</span>
+                    <span className="text-sm font-medium text-[var(--text-70)] w-20 text-right">
                       {(item.price * item.quantity).toFixed(2)} lei
                     </span>
                   </div>
@@ -121,7 +121,7 @@ function OrderRow({ order, index }: { order: Order; index: number }) {
 
               {/* Total line */}
               <div className="flex items-center justify-between pt-1">
-                <span className="text-xs text-white/35">Subtotal fără TVA: {(order.total / 1.19).toFixed(2)} lei · TVA 19%: {(order.total - order.total / 1.19).toFixed(2)} lei</span>
+                <span className="text-xs text-[var(--text-35)]">Subtotal fără TVA: {(order.total / 1.19).toFixed(2)} lei · TVA 19%: {(order.total - order.total / 1.19).toFixed(2)} lei</span>
                 <span className="font-bold text-base text-[#BC8157]">{order.total.toFixed(2)} lei</span>
               </div>
             </div>
@@ -137,11 +137,15 @@ export default function AccountClient() {
   const user   = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
 
-  const [orders, setOrders]   = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage]       = useState(0);
+  const [mounted, setMounted]     = useState(false);
+  const [orders, setOrders]       = useState<Order[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [page, setPage]           = useState(0);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
+    if (!mounted) return;
     if (!user) { router.push("/login"); return; }
     fetch("/api/orders", {
       headers: { Authorization: `Bearer ${useAuthStore.getState().token}` },
@@ -150,9 +154,9 @@ export default function AccountClient() {
       .then((data) => { if (Array.isArray(data)) setOrders(data); })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [user, router]);
+  }, [mounted, user, router]);
 
-  if (!user) return null;
+  if (!mounted || !user) return null;
 
   const totalPages  = Math.ceil(orders.length / PAGE_SIZE);
   const pageOrders  = orders.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
@@ -165,7 +169,7 @@ export default function AccountClient() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
           <div>
             <h1 className="font-display text-4xl text-[var(--text)]">Contul meu</h1>
-            <p className="text-white/60 text-sm mt-1">Hei, {user.name}! 👋</p>
+            <p className="text-[var(--text-60)] text-sm mt-1">Hei, {user.name}! 👋</p>
           </div>
           <button onClick={() => { logout(); router.push("/"); }}
             className="inline-flex items-center gap-2 text-sm text-red-400 hover:text-red-500 transition-colors border border-red-400/20 px-4 py-2 rounded-full">
@@ -185,34 +189,34 @@ export default function AccountClient() {
                   <User size={24} className="text-white" />
                 </div>
                 <div>
-                  <p className="font-semibold text-white">{user.name}</p>
-                  <p className="text-white/50 text-xs mt-0.5">{user.email}</p>
+                  <p className="font-semibold text-[var(--text)]">{user.name}</p>
+                  <p className="text-[var(--text-50)] text-xs mt-0.5">{user.email}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white/5 rounded-xl p-3 text-center">
-                  <p className="font-bold text-xl text-white">{loading ? "—" : orders.length}</p>
-                  <p className="text-white/40 text-xs mt-0.5">Comenzi</p>
+                <div className="bg-[#BC8157]/8 rounded-xl p-3 text-center">
+                  <p className="font-bold text-xl text-[var(--text)]">{loading ? "—" : orders.length}</p>
+                  <p className="text-[var(--text-40)] text-xs mt-0.5">Comenzi</p>
                 </div>
-                <div className="bg-white/5 rounded-xl p-3 text-center">
-                  <p className="font-bold text-xl text-white">
+                <div className="bg-[#BC8157]/8 rounded-xl p-3 text-center">
+                  <p className="font-bold text-xl text-[var(--text)]">
                     {loading ? "—" : orders.filter((o) => o.status === "FINALIZAT").length}
                   </p>
-                  <p className="text-white/40 text-xs mt-0.5">Finalizate</p>
+                  <p className="text-[var(--text-40)] text-xs mt-0.5">Finalizate</p>
                 </div>
               </div>
             </motion.div>
 
             {/* Quick links */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card rounded-3xl p-5">
-              <h3 className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-3">Acces rapid</h3>
+              <h3 className="text-xs font-semibold text-[var(--text-30)] uppercase tracking-widest mb-3">Acces rapid</h3>
               <div className="space-y-1">
                 {[
                   { icon: ShoppingBag, label: "Mergi la meniu", href: "/menu" },
                   { icon: MapPin, label: "Locația noastră", href: "#" },
                 ].map((item) => (
                   <Link key={item.label} href={item.href}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#BC8157]/8 transition-colors text-sm text-white/50 hover:text-[#BC8157]">
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#BC8157]/8 transition-colors text-sm text-[var(--text-50)] hover:text-[#BC8157]">
                     <item.icon size={15} />
                     {item.label}
                   </Link>
@@ -220,7 +224,7 @@ export default function AccountClient() {
               </div>
             </motion.div>
 
-            {/* Contact */}
+            {/* Contact — păstrăm text-white, fundalul portocaliu funcționează în ambele teme */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
               className="bg-gradient-to-br from-[#BC8157] to-[#9a6540] rounded-3xl p-5 text-white">
               <p className="font-semibold text-sm mb-3">Ai nevoie de ajutor?</p>
@@ -238,15 +242,15 @@ export default function AccountClient() {
 
               {/* Panel header */}
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-display text-2xl text-white">Istoricul comenzilor</h2>
+                <h2 className="font-display text-2xl text-[var(--text)]">Istoricul comenzilor</h2>
                 {!loading && orders.length > 0 && (
-                  <span className="text-xs text-white/30">{orders.length} comenzi</span>
+                  <span className="text-xs text-[var(--text-30)]">{orders.length} comenzi</span>
                 )}
               </div>
 
               {/* Column labels */}
               {!loading && orders.length > 0 && (
-                <div className="flex items-center gap-3 px-5 mb-2 text-[11px] font-medium text-white/25 uppercase tracking-wider">
+                <div className="flex items-center gap-3 px-5 mb-2 text-[11px] font-medium text-[var(--text-25)] uppercase tracking-wider">
                   <span className="w-2" />
                   <span className="w-36">Comandă</span>
                   <span className="hidden sm:block w-16">Livrare</span>
@@ -263,12 +267,12 @@ export default function AccountClient() {
                 <div className="space-y-2">
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="card rounded-2xl px-5 py-4 animate-pulse flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-white/10" />
-                      <div className="h-3 bg-white/10 rounded w-32" />
-                      <div className="h-3 bg-white/10 rounded w-20 hidden sm:block" />
-                      <div className="h-3 bg-white/10 rounded flex-1 hidden md:block" />
-                      <div className="h-5 bg-white/10 rounded-full w-20 hidden sm:block" />
-                      <div className="h-3 bg-white/10 rounded w-16 ml-auto" />
+                      <div className="w-2 h-2 rounded-full bg-[#BC8157]/15" />
+                      <div className="h-3 bg-[#BC8157]/10 rounded w-32" />
+                      <div className="h-3 bg-[#BC8157]/10 rounded w-20 hidden sm:block" />
+                      <div className="h-3 bg-[#BC8157]/10 rounded flex-1 hidden md:block" />
+                      <div className="h-5 bg-[#BC8157]/10 rounded-full w-20 hidden sm:block" />
+                      <div className="h-3 bg-[#BC8157]/10 rounded w-16 ml-auto" />
                     </div>
                   ))}
                 </div>
@@ -277,7 +281,7 @@ export default function AccountClient() {
                   <div className="w-16 h-16 rounded-2xl bg-[#BC8157]/10 flex items-center justify-center mx-auto mb-4">
                     <ShoppingBag size={28} className="text-[#BC8157]/40" />
                   </div>
-                  <p className="text-white/40 text-sm mb-5">Nu ai nicio comandă încă.</p>
+                  <p className="text-[var(--text-40)] text-sm mb-5">Nu ai nicio comandă încă.</p>
                   <Link href="/menu"
                     className="inline-flex items-center gap-2 bg-[#BC8157] text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-[#9a6540] transition-colors">
                     Descoperă meniul
@@ -293,15 +297,15 @@ export default function AccountClient() {
 
                   {/* Pagination */}
                   {totalPages > 1 && (
-                    <div className="flex items-center justify-between mt-5 pt-4 border-t border-white/5">
-                      <span className="text-xs text-white/30">
+                    <div className="flex items-center justify-between mt-5 pt-4 border-t border-[var(--border)]">
+                      <span className="text-xs text-[var(--text-30)]">
                         {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, orders.length)} din {orders.length}
                       </span>
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setPage((p) => p - 1)}
                           disabled={page === 0}
-                          className="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-white/25 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                          className="w-8 h-8 rounded-lg border border-[var(--border)] flex items-center justify-center text-[var(--text-50)] hover:text-[var(--text)] hover:border-[#BC8157]/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                         >
                           <ChevronLeft size={14} />
                         </button>
@@ -310,7 +314,7 @@ export default function AccountClient() {
                             className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
                               i === page
                                 ? "bg-[#BC8157] text-white"
-                                : "border border-white/10 text-white/40 hover:text-white hover:border-white/25"
+                                : "border border-[var(--border)] text-[var(--text-40)] hover:text-[var(--text)] hover:border-[#BC8157]/30"
                             }`}>
                             {i + 1}
                           </button>
@@ -318,7 +322,7 @@ export default function AccountClient() {
                         <button
                           onClick={() => setPage((p) => p + 1)}
                           disabled={page === totalPages - 1}
-                          className="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-white/25 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                          className="w-8 h-8 rounded-lg border border-[var(--border)] flex items-center justify-center text-[var(--text-50)] hover:text-[var(--text)] hover:border-[#BC8157]/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                         >
                           <ChevronRight size={14} />
                         </button>

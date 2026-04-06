@@ -6,7 +6,7 @@ const stats = [
   { number: "13+", label: "Arome unice" },
   { number: "100%", label: "Ingrediente naturale" },
   { number: "Zilnic", label: "Proaspăt copt" },
-  { number: "★ 5.0", label: "Rating clienți" },
+  { number: "★ 4.9", label: "Rating clienți" },
 ];
 
 export default function StatsSection() {

@@ -74,7 +74,8 @@
       "Bash(qlmanage -t -s 200 -o /Users/codrin.ene/vsc/donut-studio/lib/fonts/ /Users/codrin.ene/vsc/donut-studio/public/logo.svg)",
       "Bash(npm show:*)",
       "Bash(identify /Users/codrin.ene/vsc/donut-studio/app/icon.png)",
-      "Bash(sips -g all /Users/codrin.ene/vsc/donut-studio/app/icon.png)"
+      "Bash(sips -g all /Users/codrin.ene/vsc/donut-studio/app/icon.png)",
+      "Bash(mv /tmp/env_tmp /Users/codrin.ene/vsc/donut-studio/.env)"
     ]
   }
 }

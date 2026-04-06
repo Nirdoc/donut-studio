@@ -129,8 +129,10 @@ export default function HeroSection() {
                   src="/donuts/double-chocolate.webp"
                   alt="Double Chocolate"
                   fill
+                  sizes="(max-width: 1024px) 0px, 320px"
                   className="object-cover"
                   priority
+                  loading="eager"
                 />
               </div>
 

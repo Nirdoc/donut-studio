@@ -25,7 +25,7 @@ const contactInfo = [
   {
     icon: Phone,
     label: "Telefon",
-    value: "+40 721 000 000",
+    value: "+40745 018 888",
     sub: "Luni–Duminică, 09:00–20:00",
     href: "tel:+40721000000",
   },

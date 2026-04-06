@@ -24,7 +24,7 @@ const values = [
 
 export default function AboutSection() {
   return (
-    <section className="section-dark py-24 overflow-hidden text-white">
+    <section className="section-dark py-24 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Images */}
@@ -95,17 +95,17 @@ export default function AboutSection() {
             <p className="text-[#BC8157] font-medium text-sm uppercase tracking-widest mb-3">
               Povestea noastră
             </p>
-            <h2 className="font-display text-4xl lg:text-5xl text-white mb-6 leading-tight">
+            <h2 className="font-display text-4xl lg:text-5xl text-[var(--text)] mb-6 leading-tight">
               Pasiune pentru
               <br />
               <span className="text-[#BC8157]">artizanat</span>
             </h2>
-            <p className="text-white/70 leading-relaxed mb-6">
+            <p className="text-[var(--text-70)] leading-relaxed mb-6">
               Donut Studio s-a născut dintr-o pasiune sinceră pentru cofetărie
               artizanală. Ne-am dorit să aducem în București gogoși cu adevărat
               speciale — nu doar dulciuri, ci experiențe.
             </p>
-            <p className="text-white/70 leading-relaxed mb-10">
+            <p className="text-[var(--text-70)] leading-relaxed mb-10">
               Locația noastră din zona Piața Victoriei este mai mult decât un
               magazin: este un spațiu în care fiecare aromă spune o poveste,
               iar fiecare mușcătură devine un moment de neuitat. Venim cu
@@ -127,10 +127,10 @@ export default function AboutSection() {
                     <v.icon size={18} className="text-[#BC8157]" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-white text-sm mb-1">
+                    <h4 className="font-semibold text-[var(--text)] text-sm mb-1">
                       {v.title}
                     </h4>
-                    <p className="text-white/55 text-sm leading-relaxed">
+                    <p className="text-[var(--text-55)] text-sm leading-relaxed">
                       {v.desc}
                     </p>
                   </div>

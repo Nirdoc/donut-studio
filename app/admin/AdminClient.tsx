@@ -9,7 +9,8 @@ import {
   X, ChevronLeft, CheckCircle, XCircle, Loader2,
   UserCog, Mail, Lock, User as UserIcon, Cookie,
   ShoppingBag, FileText, MapPin, CreditCard, Banknote, Store,
-  CalendarDays, Clock as ClockIcon,
+  CalendarDays, Clock as ClockIcon, Download, BarChart2,
+  TrendingUp, PackageCheck, AlertCircle,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store";
 
@@ -775,15 +776,17 @@ function ComenziTab({ token }: { token: string }) {
       {/* Confirm dialog */}
       {confirmId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="card rounded-2xl p-6 w-80 shadow-2xl space-y-4">
-            <p className="text-sm font-semibold text-[var(--text)]">Confirmare schimbare status</p>
+          <div className="rounded-2xl p-6 w-80 shadow-2xl space-y-4 border"
+            style={{ background: "var(--mobile-menu-bg)", borderColor: "var(--border)" }}>
+            <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>Confirmare schimbare status</p>
             <p className="text-sm" style={{ color: "var(--text-60)" }}>
               Ești sigur că vrei să marchezi această comandă ca <span className="font-semibold text-green-600">Finalizat</span>?
             </p>
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setConfirmId(null)}
-                className="px-4 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-[#BC8157]/10 text-[var(--text)]"
+                className="px-4 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-[#BC8157]/10"
+                style={{ color: "var(--text)" }}
               >
                 Anulează
               </button>
@@ -987,7 +990,7 @@ function FacturiTab({ token }: { token: string }) {
             <table className="w-full">
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                  {["Factură", "Comandă", "Client", "Total", "Status email", "Emisă"].map((h) => (
+                  {["Factură", "Comandă", "Client", "Total", "Status email", "Emisă", ""].map((h) => (
                     <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider"
                       style={{ color: "var(--text-35)" }}>{h}</th>
                   ))}
@@ -1037,6 +1040,32 @@ function FacturiTab({ token }: { token: string }) {
                           {new Date(f.createdAt).toLocaleDateString("ro-RO")}
                         </p>
                       </td>
+                      <td className="px-5 py-4">
+                        <a
+                          href={`/api/admin/facturas/${f.id}/pdf`}
+                          download={`${f.facturaNumber}.pdf`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Atașăm token-ul în header nu e posibil cu <a>, folosim fetch
+                            e.preventDefault();
+                            fetch(`/api/admin/facturas/${f.id}/pdf`, {
+                              headers: { Authorization: `Bearer ${token}` },
+                            })
+                              .then((r) => r.blob())
+                              .then((blob) => {
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement("a");
+                                a.href = url;
+                                a.download = `${f.facturaNumber}.pdf`;
+                                a.click();
+                                URL.revokeObjectURL(url);
+                              });
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#BC8157] border border-[#BC8157]/30 hover:bg-[#BC8157]/10 transition-colors"
+                        >
+                          <Download size={12} /> PDF
+                        </a>
+                      </td>
                     </tr>
                   );
                 })}
@@ -1050,23 +1079,460 @@ function FacturiTab({ token }: { token: string }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// DASHBOARD TAB
+// ═══════════════════════════════════════════════════════════════════════════════
+
+interface DashboardData {
+  kpis: {
+    todayOrders: number; todayRevenue: number;
+    yesterdayOrders: number; yesterdayRevenue: number;
+    weekOrders: number; weekRevenue: number;
+    prevWeekOrders: number; prevWeekRevenue: number;
+    monthOrders: number; monthRevenue: number; prevMonthRevenue: number;
+    avgOrderValue: number; prevAvgOrderValue: number;
+    pendingOrders: number; cancelledMonth: number;
+    newUsersWeek: number; newUsersPrevWeek: number;
+    totalUsers: number; allTimeOrders: number; allTimeRevenue: number;
+  };
+  dailyStats: Array<{ date: string; count: number; revenue: number }>;
+  statusBreakdown: Array<{ status: string; count: number }>;
+  paymentBreakdown: Array<{ method: string; count: number; revenue: number }>;
+  topProducts: Array<{ name: string; qty: number; revenue: number }>;
+  topSlots: Array<{ slot: string; count: number }>;
+}
+
+const fmtLei = (n: number) =>
+  n.toLocaleString("ro-RO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " lei";
+
+const fmtLeiCompact = (n: number) =>
+  n >= 1000
+    ? (n / 1000).toLocaleString("ro-RO", { maximumFractionDigits: 1 }) + "k lei"
+    : n.toFixed(0) + " lei";
+
+function trend(current: number, previous: number): { pct: number; up: boolean; neutral: boolean } {
+  if (previous === 0) return { pct: current > 0 ? 100 : 0, up: current >= 0, neutral: previous === 0 && current === 0 };
+  const pct = Math.round(((current - previous) / previous) * 100);
+  return { pct: Math.abs(pct), up: pct >= 0, neutral: pct === 0 };
+}
+
+function TrendBadge({ current, previous, suffix = "" }: { current: number; previous: number; suffix?: string }) {
+  const t = trend(current, previous);
+  if (t.neutral) return <span className="text-[10px] px-1.5 py-0.5 rounded-md" style={{ color: "var(--text-30)", background: "var(--surface)" }}>—</span>;
+  return (
+    <span className={`inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-md font-semibold ${t.up ? "bg-green-500/12 text-green-600" : "bg-red-500/12 text-red-500"}`}>
+      {t.up ? "▲" : "▼"} {t.pct}%{suffix}
+    </span>
+  );
+}
+
+// SVG line chart
+function LineChart({ data, color = "#BC8157", height = 80 }: {
+  data: number[]; color?: string; height?: number;
+}) {
+  if (data.length < 2) return null;
+  const max = Math.max(...data, 1);
+  const min = Math.min(...data, 0);
+  const range = max - min || 1;
+  const W = 300; const H = height;
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * W;
+    const y = H - ((v - min) / range) * H * 0.9 - H * 0.05;
+    return `${x},${y}`;
+  });
+  const area = `M${pts[0]} L${pts.join(" L")} L${W},${H} L0,${H} Z`;
+  const line = `M${pts[0]} L${pts.join(" L")}`;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height }}>
+      <defs>
+        <linearGradient id={`g-${color.replace("#","")}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={color} stopOpacity="0.01" />
+        </linearGradient>
+      </defs>
+      <path d={area} fill={`url(#g-${color.replace("#","")})`} />
+      <path d={line} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// Bar chart (horizontal)
+function HBar({ value, max, color = "#BC8157" }: { value: number; max: number; color?: string }) {
+  const pct = max > 0 ? Math.max((value / max) * 100, 2) : 2;
+  return (
+    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
+      <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: color }} />
+    </div>
+  );
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  PENDING_PAYMENT: "Plată în curs", PENDING: "În așteptare",
+  PROCESSING: "În procesare", FINALIZAT: "Finalizat", ANULAT: "Anulat",
+};
+const STATUS_COLORS: Record<string, string> = {
+  PENDING_PAYMENT: "#a855f7", PENDING: "#f59e0b",
+  PROCESSING: "#3b82f6", FINALIZAT: "#22c55e", ANULAT: "#ef4444",
+};
+const PAYMENT_LABELS: Record<string, string> = { cash: "Numerar", card: "Card", pickup: "Ridicare" };
+const PAYMENT_COLORS: Record<string, string> = { cash: "#22c55e", card: "#3b82f6", pickup: "#BC8157" };
+
+function DashboardTab({ token }: { token: string }) {
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [chartMode, setChartMode] = useState<"orders" | "revenue">("revenue");
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/dashboard", { headers: { Authorization: `Bearer ${token}` } });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error ?? "Eroare");
+        setData(json);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "Eroare.");
+      } finally { setLoading(false); }
+    })();
+  }, [token]);
+
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center py-24 gap-3">
+      <Loader2 size={28} className="animate-spin text-[#BC8157]" />
+      <p className="text-sm" style={{ color: "var(--text-40)" }}>Se încarcă statisticile…</p>
+    </div>
+  );
+  if (error || !data) return <div className="py-16 text-center text-red-500 text-sm">{error || "Eroare."}</div>;
+
+  const { kpis, dailyStats, statusBreakdown, paymentBreakdown, topProducts, topSlots } = data;
+
+  const chartValues = chartMode === "revenue"
+    ? dailyStats.map(d => d.revenue)
+    : dailyStats.map(d => d.count);
+
+  const maxProduct = Math.max(...topProducts.map(p => p.qty), 1);
+  const maxSlot = Math.max(...topSlots.map(s => s.count), 1);
+  const totalStatus = statusBreakdown.reduce((a, b) => a + b.count, 0) || 1;
+  const totalPayment = paymentBreakdown.reduce((a, b) => a + b.count, 0) || 1;
+
+  // Card helpers
+  const card = "card rounded-2xl";
+
+  return (
+    <div className="space-y-5">
+
+      {/* ── Row 1: Hero KPIs ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+        {/* Venit luna */}
+        <div className={`${card} p-5 lg:col-span-1`}>
+          <div className="flex items-start justify-between mb-3">
+            <div className="w-9 h-9 rounded-xl bg-[#BC8157]/12 flex items-center justify-center">
+              <TrendingUp size={16} className="text-[#BC8157]" />
+            </div>
+            <TrendBadge current={kpis.monthRevenue} previous={kpis.prevMonthRevenue} />
+          </div>
+          <p className="text-xl font-bold leading-tight" style={{ color: "var(--text)" }}>
+            {fmtLeiCompact(kpis.monthRevenue)}
+          </p>
+          <p className="text-xs mt-0.5" style={{ color: "var(--text-40)" }}>Venit luna aceasta</p>
+          <p className="text-[10px] mt-2" style={{ color: "var(--text-30)" }}>
+            vs. {fmtLeiCompact(kpis.prevMonthRevenue)} luna trecută
+          </p>
+        </div>
+
+        {/* Comenzi saptamana */}
+        <div className={`${card} p-5`}>
+          <div className="flex items-start justify-between mb-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center">
+              <ShoppingBag size={16} className="text-blue-500" />
+            </div>
+            <TrendBadge current={kpis.weekOrders} previous={kpis.prevWeekOrders} />
+          </div>
+          <p className="text-xl font-bold leading-tight" style={{ color: "var(--text)" }}>{kpis.weekOrders}</p>
+          <p className="text-xs mt-0.5" style={{ color: "var(--text-40)" }}>Comenzi săptămâna aceasta</p>
+          <p className="text-[10px] mt-2" style={{ color: "var(--text-30)" }}>vs. {kpis.prevWeekOrders} săptămâna trecută</p>
+        </div>
+
+        {/* Valoare medie */}
+        <div className={`${card} p-5`}>
+          <div className="flex items-start justify-between mb-3">
+            <div className="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center">
+              <CreditCard size={16} className="text-violet-500" />
+            </div>
+            <TrendBadge current={kpis.avgOrderValue} previous={kpis.prevAvgOrderValue} />
+          </div>
+          <p className="text-xl font-bold leading-tight" style={{ color: "var(--text)" }}>
+            {fmtLeiCompact(kpis.avgOrderValue)}
+          </p>
+          <p className="text-xs mt-0.5" style={{ color: "var(--text-40)" }}>Valoare medie comandă (30 zile)</p>
+          <p className="text-[10px] mt-2" style={{ color: "var(--text-30)" }}>
+            vs. {fmtLeiCompact(kpis.prevAvgOrderValue)} luna trecută
+          </p>
+        </div>
+
+        {/* Utilizatori noi */}
+        <div className={`${card} p-5`}>
+          <div className="flex items-start justify-between mb-3">
+            <div className="w-9 h-9 rounded-xl bg-teal-500/10 flex items-center justify-center">
+              <Users size={16} className="text-teal-500" />
+            </div>
+            <TrendBadge current={kpis.newUsersWeek} previous={kpis.newUsersPrevWeek} />
+          </div>
+          <p className="text-xl font-bold leading-tight" style={{ color: "var(--text)" }}>{kpis.newUsersWeek}</p>
+          <p className="text-xs mt-0.5" style={{ color: "var(--text-40)" }}>Utilizatori noi săptămâna aceasta</p>
+          <p className="text-[10px] mt-2" style={{ color: "var(--text-30)" }}>
+            {kpis.totalUsers.toLocaleString("ro-RO")} utilizatori total
+          </p>
+        </div>
+      </div>
+
+      {/* ── Row 2: Secondary KPIs (small) ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {[
+          { label: "Comenzi azi", value: kpis.todayOrders, sub: `vs. ${kpis.yesterdayOrders} ieri`, color: "#BC8157", trend: { c: kpis.todayOrders, p: kpis.yesterdayOrders } },
+          { label: "Venit azi", value: fmtLeiCompact(kpis.todayRevenue), sub: `vs. ${fmtLeiCompact(kpis.yesterdayRevenue)} ieri`, color: "#BC8157", trend: { c: kpis.todayRevenue, p: kpis.yesterdayRevenue } },
+          { label: "Venit săptămână", value: fmtLeiCompact(kpis.weekRevenue), sub: `vs. ${fmtLeiCompact(kpis.prevWeekRevenue)} prev.`, color: "#3b82f6", trend: { c: kpis.weekRevenue, p: kpis.prevWeekRevenue } },
+          { label: "În așteptare", value: kpis.pendingOrders, sub: "necesită acțiune", color: "#f59e0b", trend: null },
+          { label: "Anulate luna", value: kpis.cancelledMonth, sub: "din luna aceasta", color: "#ef4444", trend: null },
+          { label: "Total comenzi", value: kpis.allTimeOrders.toLocaleString("ro-RO"), sub: fmtLeiCompact(kpis.allTimeRevenue) + " total", color: "#22c55e", trend: null },
+        ].map(({ label, value, sub, color, trend: tr }) => (
+          <div key={label} className={`${card} px-4 py-3.5`}>
+            <p className="text-lg font-bold leading-tight" style={{ color }}>{value}</p>
+            <p className="text-[10px] font-medium mt-0.5" style={{ color: "var(--text-50)" }}>{label}</p>
+            <div className="flex items-center gap-1.5 mt-1.5">
+              {tr && <TrendBadge current={tr.c} previous={tr.p} />}
+              <p className="text-[9px]" style={{ color: "var(--text-30)" }}>{sub}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Row 3: Line chart ── */}
+      <div className={`${card} p-6`}>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <BarChart2 size={16} className="text-[#BC8157]" />
+            <h3 className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+              {chartMode === "revenue" ? "Venit zilnic" : "Comenzi zilnice"} — ultimele 30 zile
+            </h3>
+          </div>
+          <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: "var(--border)" }}>
+            {(["revenue", "orders"] as const).map((m) => (
+              <button key={m} onClick={() => setChartMode(m)}
+                className="px-3 py-1.5 text-xs font-medium transition-colors"
+                style={chartMode === m
+                  ? { background: "#BC8157", color: "#fff" }
+                  : { color: "var(--text-50)" }}>
+                {m === "revenue" ? "Venit" : "Comenzi"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Y-axis labels + chart */}
+        <div className="flex gap-3 items-end">
+          <div className="flex flex-col justify-between text-right h-20 pb-4">
+            {[1, 0.5, 0].map(f => {
+              const maxV = Math.max(...chartValues, 1);
+              const v = maxV * f;
+              return (
+                <span key={f} className="text-[9px]" style={{ color: "var(--text-25, rgba(240,221,200,0.25))" }}>
+                  {chartMode === "revenue" ? fmtLeiCompact(v) : Math.round(v)}
+                </span>
+              );
+            })}
+          </div>
+          <div className="flex-1">
+            <LineChart data={chartValues} height={80} />
+            {/* X-axis: first + mid + last */}
+            <div className="flex justify-between text-[9px] mt-1 px-0.5" style={{ color: "var(--text-30)" }}>
+              {[0, Math.floor(dailyStats.length / 2), dailyStats.length - 1].map(i => (
+                <span key={i}>
+                  {new Date(dailyStats[i]?.date).toLocaleDateString("ro-RO", { day: "2-digit", month: "2-digit" })}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Summary row */}
+        <div className="flex gap-6 mt-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
+          <div>
+            <p className="text-xs font-semibold text-[#BC8157]">
+              {fmtLei(dailyStats.reduce((s, d) => s + d.revenue, 0))}
+            </p>
+            <p className="text-[10px]" style={{ color: "var(--text-35)" }}>Venit total 30 zile</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold" style={{ color: "var(--text)" }}>
+              {dailyStats.reduce((s, d) => s + d.count, 0)} comenzi
+            </p>
+            <p className="text-[10px]" style={{ color: "var(--text-35)" }}>Total 30 zile</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold" style={{ color: "var(--text)" }}>
+              {fmtLei(dailyStats.reduce((s, d) => s + d.revenue, 0) / Math.max(dailyStats.filter(d => d.count > 0).length, 1))}
+            </p>
+            <p className="text-[10px]" style={{ color: "var(--text-35)" }}>Medie/zi activă</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Row 4: 3 columns ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        {/* Top produse */}
+        <div className={`${card} p-5`}>
+          <div className="flex items-center gap-2 mb-4">
+            <Cookie size={14} className="text-[#BC8157]" />
+            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-50)" }}>
+              Top produse (90 zile)
+            </h3>
+          </div>
+          {topProducts.length === 0
+            ? <p className="text-xs text-center py-4" style={{ color: "var(--text-30)" }}>Fără date</p>
+            : <div className="space-y-3">
+              {topProducts.map((p, i) => (
+                <div key={p.name}>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-[10px] font-bold w-4 flex-shrink-0" style={{ color: "var(--text-30)" }}>
+                        {i + 1}
+                      </span>
+                      <span className="text-xs font-medium truncate" style={{ color: "var(--text)" }}>{p.name}</span>
+                    </div>
+                    <span className="text-xs font-bold text-[#BC8157] flex-shrink-0 ml-2">{p.qty} buc</span>
+                  </div>
+                  <HBar value={p.qty} max={maxProduct} />
+                  <p className="text-[9px] mt-0.5 text-right" style={{ color: "var(--text-30)" }}>
+                    {fmtLeiCompact(p.revenue)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          }
+        </div>
+
+        {/* Metodă de plată + Status */}
+        <div className="space-y-4">
+          <div className={`${card} p-5`}>
+            <div className="flex items-center gap-2 mb-4">
+              <Banknote size={14} className="text-[#BC8157]" />
+              <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-50)" }}>
+                Metodă de plată
+              </h3>
+            </div>
+            <div className="space-y-2.5">
+              {paymentBreakdown.sort((a, b) => b.count - a.count).map(p => {
+                const pct = Math.round((p.count / totalPayment) * 100);
+                const color = PAYMENT_COLORS[p.method] ?? "#BC8157";
+                return (
+                  <div key={p.method}>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span style={{ color: "var(--text-60)" }}>{PAYMENT_LABELS[p.method] ?? p.method}</span>
+                      <span className="font-semibold" style={{ color }}>{p.count} ({pct}%)</span>
+                    </div>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
+                      <div className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${pct}%`, background: color }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className={`${card} p-5`}>
+            <div className="flex items-center gap-2 mb-4">
+              <PackageCheck size={14} className="text-[#BC8157]" />
+              <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-50)" }}>
+                Status comenzi (total)
+              </h3>
+            </div>
+            <div className="space-y-2.5">
+              {statusBreakdown.sort((a, b) => b.count - a.count).map(({ status, count }) => {
+                const pct = Math.round((count / totalStatus) * 100);
+                const color = STATUS_COLORS[status] ?? "#BC8157";
+                return (
+                  <div key={status}>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span style={{ color: "var(--text-60)" }}>{STATUS_LABELS[status] ?? status}</span>
+                      <span className="font-semibold" style={{ color }}>{count} ({pct}%)</span>
+                    </div>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
+                      <div className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${pct}%`, background: color }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Intervale orare livrare */}
+        <div className={`${card} p-5`}>
+          <div className="flex items-center gap-2 mb-4">
+            <ClockIcon size={14} className="text-[#BC8157]" />
+            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-50)" }}>
+              Intervale de livrare populare
+            </h3>
+          </div>
+          {topSlots.length === 0
+            ? <p className="text-xs text-center py-4" style={{ color: "var(--text-30)" }}>Fără date</p>
+            : <div className="space-y-3">
+              {topSlots.map((s, i) => {
+                const pct = Math.round((s.count / topSlots[0].count) * 100);
+                const isTop = i === 0;
+                return (
+                  <div key={s.slot}>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        {isTop && <span className="text-[9px] bg-[#BC8157]/15 text-[#BC8157] px-1.5 py-0.5 rounded-md font-semibold">TOP</span>}
+                        <span className="text-xs font-medium" style={{ color: "var(--text)" }}>{s.slot}</span>
+                      </div>
+                      <span className="text-xs font-bold" style={{ color: isTop ? "#BC8157" : "var(--text-60)" }}>
+                        {s.count} comenzi
+                      </span>
+                    </div>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
+                      <div className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${pct}%`, background: isTop ? "#BC8157" : "rgba(188,129,87,0.4)" }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          }
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // MAIN SHELL
 // ═══════════════════════════════════════════════════════════════════════════════
 
-type Tab = "users" | "donuts" | "comenzi" | "facturi";
+type Tab = "dashboard" | "users" | "donuts" | "comenzi" | "facturi";
 
 export default function AdminClient() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const token = useAuthStore((s) => s.token);
-  const [tab, setTab] = useState<Tab>("users");
+  const [tab, setTab] = useState<Tab>("dashboard");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
+    if (!mounted) return;
     if (!user) { router.push("/login"); return; }
     if (user.role !== "ADMIN") { router.push("/"); }
-  }, [user, router]);
+  }, [mounted, user, router]);
 
-  if (!user || user.role !== "ADMIN") return null;
+  if (!mounted || !user || user.role !== "ADMIN") return null;
 
   return (
     <div className="min-h-screen pt-28 pb-12">
@@ -1092,10 +1558,11 @@ export default function AdminClient() {
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
           className="flex gap-1 p-1 rounded-2xl mb-6 w-fit" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
           {([
-            { id: "users"   as Tab, icon: Users,       label: "Utilizatori" },
-            { id: "donuts"  as Tab, icon: Cookie,       label: "Gogoși" },
-            { id: "comenzi" as Tab, icon: ShoppingBag,  label: "Comenzi" },
-            { id: "facturi" as Tab, icon: FileText,     label: "Facturi" },
+            { id: "dashboard" as Tab, icon: BarChart2,   label: "Dashboard" },
+            { id: "users"     as Tab, icon: Users,       label: "Utilizatori" },
+            { id: "donuts"    as Tab, icon: Cookie,       label: "Gogoși" },
+            { id: "comenzi"   as Tab, icon: ShoppingBag,  label: "Comenzi" },
+            { id: "facturi"   as Tab, icon: FileText,     label: "Facturi" },
           ]).map(({ id, icon: Icon, label }) => (
             <button key={id} onClick={() => setTab(id)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all"
@@ -1107,10 +1574,11 @@ export default function AdminClient() {
 
         {/* Tab content */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          {tab === "users"   && <UsersTab   token={token ?? ""} />}
-          {tab === "donuts"  && <DonutsTab  token={token ?? ""} />}
-          {tab === "comenzi" && <ComenziTab token={token ?? ""} />}
-          {tab === "facturi" && <FacturiTab token={token ?? ""} />}
+          {tab === "dashboard" && <DashboardTab token={token ?? ""} />}
+          {tab === "users"     && <UsersTab     token={token ?? ""} />}
+          {tab === "donuts"    && <DonutsTab    token={token ?? ""} />}
+          {tab === "comenzi"   && <ComenziTab   token={token ?? ""} />}
+          {tab === "facturi"   && <FacturiTab   token={token ?? ""} />}
         </motion.div>
       </div>
     </div>

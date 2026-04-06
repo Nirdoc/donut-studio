@@ -79,6 +79,7 @@ export default function Footer() {
                 { href: "/politica-de-livrare", label: "Politica de livrare" },
                 { href: "/politica-de-retur", label: "Politica de retur" },
                 { href: "/politica-de-confidentialitate", label: "Politica de confidențialitate" },
+                { href: "/politica-cookie-uri", label: "Politica înștiințare cookie-uri" },
                 { href: "/modalitati-de-plata", label: "Modalități de plată" },
               ].map((l) => (
                 <li key={l.href}>

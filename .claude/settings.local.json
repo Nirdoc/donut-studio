@@ -75,7 +75,8 @@
       "Bash(npm show:*)",
       "Bash(identify /Users/codrin.ene/vsc/donut-studio/app/icon.png)",
       "Bash(sips -g all /Users/codrin.ene/vsc/donut-studio/app/icon.png)",
-      "Bash(mv /tmp/env_tmp /Users/codrin.ene/vsc/donut-studio/.env)"
+      "Bash(mv /tmp/env_tmp /Users/codrin.ene/vsc/donut-studio/.env)",
+      "Bash(npx vercel:*)"
     ]
   }
 }

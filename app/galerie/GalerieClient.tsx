@@ -7,7 +7,7 @@ import { X, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 
 const IMAGES = Array.from({ length: 40 }, (_, i) => ({
   id: i + 1,
-  src: `https://www.donutstudio.ro/wp-content/uploads/2025/03/${i + 1}.webp`,
+  src: `/galerie/${i + 1}.webp`,
   alt: `Donut Studio — fotografie ${i + 1}`,
 }));
 

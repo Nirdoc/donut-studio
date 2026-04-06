@@ -2,7 +2,6 @@
 
 import { useCartStore } from "@/lib/store";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
 import { X, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 
@@ -70,8 +69,8 @@ export default function CartDrawer() {
                         exit={{ opacity: 0, x: 50 }}
                         className="card-mid flex gap-4 p-3 rounded-2xl"
                       >
-                        <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
-                          <Image src={item.product.image} alt={item.product.name} fill className="object-cover" />
+                        <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
+                          <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm truncate" style={{ color: "var(--text)" }}>{item.product.name}</p>

@@ -9,19 +9,19 @@ const events = [
     icon: Cake,
     title: "Nunți & Botezuri",
     desc: "Servicii complete de catering cu gogoși artizanale pentru cele mai importante momente ale vieții tale.",
-    image: "https://www.donutstudio.ro/wp-content/uploads/2024/07/Almond-Famous-1.webp",
+    image: "/donuts/almond-famous.webp",
   },
   {
     icon: Camera,
     title: "Donut Wall",
     desc: "Instalații spectaculoase de gogoși — perfecte pentru fotografii și un plus de savoare la orice eveniment.",
-    image: "https://www.donutstudio.ro/wp-content/uploads/2024/07/Coffeelicious.webp",
+    image: "/donuts/coffeelicious.webp",
   },
   {
     icon: Users,
     title: "Corporate Events",
     desc: "Cutii cu mini-gogoși asortate, ideale pentru întâlniri de afaceri, conferințe sau team-buildinguri.",
-    image: "https://www.donutstudio.ro/wp-content/uploads/2024/07/Orange-Blossom.webp",
+    image: "/donuts/orange-blossom.webp",
   },
 ];
 

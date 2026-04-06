@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -8,6 +8,8 @@ import {
   ShieldCheck, Users, Search, Plus, Pencil, Trash2,
   X, ChevronLeft, CheckCircle, XCircle, Loader2,
   UserCog, Mail, Lock, User as UserIcon, Cookie,
+  ShoppingBag, FileText, MapPin, CreditCard, Banknote, Store,
+  CalendarDays, Clock as ClockIcon,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store";
 
@@ -705,10 +707,325 @@ function DonutsTab({ token }: { token: string }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// COMENZI TAB
+// ═══════════════════════════════════════════════════════════════════════════════
+
+interface AdminOrder {
+  id: string; orderNumber: string; firstName: string; lastName: string;
+  email: string; phone: string; deliveryDate: string; deliveryTime: string;
+  paymentMethod: string; subtotal: number; deliveryFee: number; total: number;
+  status: string; createdAt: string;
+  items: Array<{ name: string; price: number; quantity: number }>;
+  factura?: { facturaNumber: string; emailed: boolean } | null;
+}
+
+const statusConfig: Record<string, { label: string; cls: string }> = {
+  PENDING:    { label: "În așteptare", cls: "bg-amber-500/12 text-amber-600 border-amber-500/25" },
+  PROCESSING: { label: "În procesare", cls: "bg-blue-500/12 text-blue-600 border-blue-500/25" },
+  FINALIZAT:  { label: "Finalizat",    cls: "bg-green-500/12 text-green-600 border-green-500/25" },
+  ANULAT:     { label: "Anulat",       cls: "bg-red-500/12 text-red-500 border-red-500/25" },
+};
+
+const paymentLabel: Record<string, { label: string; Icon: React.ElementType }> = {
+  cash:   { label: "Numerar",  Icon: Banknote },
+  card:   { label: "Card",     Icon: CreditCard },
+  pickup: { label: "Ridicare", Icon: Store },
+};
+
+function ComenziTab({ token }: { token: string }) {
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [q, setQ] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [marking, setMarking] = useState<string | null>(null);
+
+  const fetchOrders = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (q) params.set("q", q);
+      if (filterStatus) params.set("status", filterStatus);
+      const res = await fetch(`/api/admin/orders?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) setOrders(await res.json());
+    } finally { setLoading(false); }
+  }, [q, filterStatus, token]);
+
+  useEffect(() => { fetchOrders(); }, [fetchOrders]);
+
+  const markFinalizat = async (id: string) => {
+    setMarking(id);
+    try {
+      await fetch(`/api/admin/orders/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status: "FINALIZAT" }),
+      });
+      fetchOrders();
+    } finally { setMarking(null); }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Toolbar */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#BC8157]/50" />
+          <input value={q} onChange={(e) => setQ(e.target.value)}
+            placeholder="Caută număr comandă, email, nume..."
+            className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl input-dark bg-transparent text-[var(--text)]" />
+        </div>
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
+          className="px-4 py-2.5 text-sm rounded-xl input-dark bg-transparent text-[var(--text)]">
+          <option value="">Toate statusurile</option>
+          {Object.entries(statusConfig).map(([k, v]) => (
+            <option key={k} value={k}>{v.label}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Table */}
+      <div className="card rounded-3xl overflow-hidden">
+        {loading ? (
+          <div className="flex justify-center py-16"><Loader2 size={24} className="animate-spin text-[#BC8157]" /></div>
+        ) : orders.length === 0 ? (
+          <div className="py-16 text-center text-sm" style={{ color: "var(--text-40)" }}>Nu există comenzi.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                  {["Comandă", "Client", "Livrare", "Plată", "Total", "Status", ""].map((h) => (
+                    <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider"
+                      style={{ color: "var(--text-35)" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map((o) => {
+                  const st = statusConfig[o.status] ?? statusConfig.PENDING;
+                  const pm = paymentLabel[o.paymentMethod];
+                  const isExpanded = expanded === o.id;
+                  return (
+                    <React.Fragment key={o.id}>
+                      <tr className="hover:bg-[#BC8157]/4 transition-colors cursor-pointer"
+                        style={{ borderBottom: "1px solid var(--border)" }}
+                        onClick={() => setExpanded(isExpanded ? null : o.id)}>
+                        <td className="px-5 py-4">
+                          <p className="text-xs font-bold text-[#BC8157]">{o.orderNumber}</p>
+                          <p className="text-xs mt-0.5" style={{ color: "var(--text-35)" }}>
+                            {new Date(o.createdAt).toLocaleDateString("ro-RO")}
+                          </p>
+                        </td>
+                        <td className="px-5 py-4">
+                          <p className="text-sm font-medium text-[var(--text)]">{o.firstName} {o.lastName}</p>
+                          <p className="text-xs" style={{ color: "var(--text-40)" }}>{o.email}</p>
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-1.5 text-xs" style={{ color: "var(--text-60)" }}>
+                            <CalendarDays size={12} className="text-[#BC8157]" />
+                            {o.deliveryDate}
+                          </div>
+                          <div className="flex items-center gap-1.5 text-xs mt-1" style={{ color: "var(--text-40)" }}>
+                            <ClockIcon size={12} />
+                            {o.deliveryTime}
+                          </div>
+                        </td>
+                        <td className="px-5 py-4">
+                          {pm && (
+                            <div className="flex items-center gap-1.5 text-xs" style={{ color: "var(--text-60)" }}>
+                              <pm.Icon size={13} className="text-[#BC8157]" />
+                              {pm.label}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-5 py-4">
+                          <p className="text-sm font-bold text-[#BC8157]">{o.total.toFixed(2)} lei</p>
+                          {o.deliveryFee > 0 && (
+                            <p className="text-xs" style={{ color: "var(--text-35)" }}>+{o.deliveryFee} lei liv.</p>
+                          )}
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${st.cls}`}>
+                            {st.label}
+                          </span>
+                          {o.factura && (
+                            <p className="text-xs mt-1" style={{ color: o.factura.emailed ? "var(--text-35)" : "var(--text-50)" }}>
+                              {o.factura.facturaNumber} {o.factura.emailed ? "· trimisă" : "· neprimisă"}
+                            </p>
+                          )}
+                        </td>
+                        <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                          {o.status !== "FINALIZAT" && o.status !== "ANULAT" && (
+                            <button
+                              onClick={() => markFinalizat(o.id)}
+                              disabled={marking === o.id}
+                              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 transition-colors"
+                            >
+                              {marking === o.id
+                                ? <Loader2 size={12} className="animate-spin" />
+                                : <CheckCircle size={12} />}
+                              Finalizat
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--surface)" }}>
+                          <td colSpan={7} className="px-5 py-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-35)" }}>
+                                  Produse comandate
+                                </p>
+                                <div className="space-y-1">
+                                  {o.items.map((item, i) => (
+                                    <div key={i} className="flex justify-between text-xs" style={{ color: "var(--text-60)" }}>
+                                      <span>{item.name} × {item.quantity}</span>
+                                      <span className="text-[#BC8157]">{(item.price * item.quantity).toFixed(2)} lei</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-35)" }}>
+                                  Contact & telefon
+                                </p>
+                                <p className="text-xs" style={{ color: "var(--text-60)" }}>{o.phone}</p>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FACTURI TAB
+// ═══════════════════════════════════════════════════════════════════════════════
+
+interface AdminFactura {
+  id: string; facturaNumber: string; firstName: string; lastName: string;
+  email: string; subtotal: number; deliveryFee: number; total: number;
+  emailed: boolean; createdAt: string;
+  comanda: { orderNumber: string; status: string; paymentMethod: string };
+}
+
+function FacturiTab({ token }: { token: string }) {
+  const [facturas, setFacturas] = useState<AdminFactura[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [q, setQ] = useState("");
+
+  const fetchFacturas = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = q ? `?q=${encodeURIComponent(q)}` : "";
+      const res = await fetch(`/api/admin/facturas${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) setFacturas(await res.json());
+    } finally { setLoading(false); }
+  }, [q, token]);
+
+  useEffect(() => { fetchFacturas(); }, [fetchFacturas]);
+
+  return (
+    <div className="space-y-4">
+      <div className="relative">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#BC8157]/50" />
+        <input value={q} onChange={(e) => setQ(e.target.value)}
+          placeholder="Caută număr factură, email, nume..."
+          className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl input-dark bg-transparent text-[var(--text)]" />
+      </div>
+
+      <div className="card rounded-3xl overflow-hidden">
+        {loading ? (
+          <div className="flex justify-center py-16"><Loader2 size={24} className="animate-spin text-[#BC8157]" /></div>
+        ) : facturas.length === 0 ? (
+          <div className="py-16 text-center text-sm" style={{ color: "var(--text-40)" }}>Nu există facturi.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                  {["Factură", "Comandă", "Client", "Total", "Status email", "Emisă"].map((h) => (
+                    <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider"
+                      style={{ color: "var(--text-35)" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {facturas.map((f) => {
+                  const pm = paymentLabel[f.comanda.paymentMethod];
+                  const orderSt = statusConfig[f.comanda.status] ?? statusConfig.PENDING;
+                  return (
+                    <tr key={f.id} style={{ borderBottom: "1px solid var(--border)" }}
+                      className="hover:bg-[#BC8157]/4 transition-colors">
+                      <td className="px-5 py-4">
+                        <p className="text-xs font-bold text-[#BC8157]">{f.facturaNumber}</p>
+                      </td>
+                      <td className="px-5 py-4">
+                        <p className="text-xs font-medium" style={{ color: "var(--text)" }}>{f.comanda.orderNumber}</p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs border ${orderSt.cls}`}>{orderSt.label}</span>
+                          {pm && (
+                            <span className="text-xs flex items-center gap-0.5" style={{ color: "var(--text-40)" }}>
+                              <pm.Icon size={11} /> {pm.label}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <p className="text-sm font-medium" style={{ color: "var(--text)" }}>{f.firstName} {f.lastName}</p>
+                        <p className="text-xs" style={{ color: "var(--text-40)" }}>{f.email}</p>
+                      </td>
+                      <td className="px-5 py-4">
+                        <p className="text-sm font-bold text-[#BC8157]">{f.total.toFixed(2)} lei</p>
+                      </td>
+                      <td className="px-5 py-4">
+                        {f.emailed ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border bg-green-500/12 text-green-600 border-green-500/25">
+                            <CheckCircle size={11} /> Trimisă
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border bg-amber-500/12 text-amber-600 border-amber-500/25">
+                            <ClockIcon size={11} /> Așteptare
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-5 py-4">
+                        <p className="text-xs" style={{ color: "var(--text-40)" }}>
+                          {new Date(f.createdAt).toLocaleDateString("ro-RO")}
+                        </p>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // MAIN SHELL
 // ═══════════════════════════════════════════════════════════════════════════════
 
-type Tab = "users" | "donuts";
+type Tab = "users" | "donuts" | "comenzi" | "facturi";
 
 export default function AdminClient() {
   const router = useRouter();
@@ -747,8 +1064,10 @@ export default function AdminClient() {
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
           className="flex gap-1 p-1 rounded-2xl mb-6 w-fit" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
           {([
-            { id: "users" as Tab, icon: Users, label: "Utilizatori" },
-            { id: "donuts" as Tab, icon: Cookie, label: "Gogoși" },
+            { id: "users"   as Tab, icon: Users,       label: "Utilizatori" },
+            { id: "donuts"  as Tab, icon: Cookie,       label: "Gogoși" },
+            { id: "comenzi" as Tab, icon: ShoppingBag,  label: "Comenzi" },
+            { id: "facturi" as Tab, icon: FileText,     label: "Facturi" },
           ]).map(({ id, icon: Icon, label }) => (
             <button key={id} onClick={() => setTab(id)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all"
@@ -760,7 +1079,10 @@ export default function AdminClient() {
 
         {/* Tab content */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          {tab === "users" ? <UsersTab token={token ?? ""} /> : <DonutsTab token={token ?? ""} />}
+          {tab === "users"   && <UsersTab   token={token ?? ""} />}
+          {tab === "donuts"  && <DonutsTab  token={token ?? ""} />}
+          {tab === "comenzi" && <ComenziTab token={token ?? ""} />}
+          {tab === "facturi" && <FacturiTab token={token ?? ""} />}
         </motion.div>
       </div>
     </div>

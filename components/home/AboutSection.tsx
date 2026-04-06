@@ -39,7 +39,7 @@ export default function AboutSection() {
               <div className="space-y-4">
                 <div className="rounded-3xl overflow-hidden h-52">
                   <Image
-                    src="https://www.donutstudio.ro/wp-content/uploads/2024/07/Caramel-Dash.webp"
+                    src="/donuts/caramel-dash.webp"
                     alt="Caramel Dash"
                     width={300}
                     height={208}
@@ -48,7 +48,7 @@ export default function AboutSection() {
                 </div>
                 <div className="rounded-3xl overflow-hidden h-36">
                   <Image
-                    src="https://www.donutstudio.ro/wp-content/uploads/2024/07/Blueberry-Rush-1.webp"
+                    src="/donuts/blueberry-rush.webp"
                     alt="Blueberry Rush"
                     width={300}
                     height={144}
@@ -59,7 +59,7 @@ export default function AboutSection() {
               <div className="space-y-4 mt-8">
                 <div className="rounded-3xl overflow-hidden h-36">
                   <Image
-                    src="https://www.donutstudio.ro/wp-content/uploads/2024/07/Pistachious.webp"
+                    src="/donuts/pistachious.webp"
                     alt="Pistachious"
                     width={300}
                     height={144}
@@ -68,7 +68,7 @@ export default function AboutSection() {
                 </div>
                 <div className="rounded-3xl overflow-hidden h-52">
                   <Image
-                    src="https://www.donutstudio.ro/wp-content/uploads/2024/07/Honey-Buzz.webp"
+                    src="/donuts/honey-buzz.webp"
                     alt="Honey Buzz"
                     width={300}
                     height={208}

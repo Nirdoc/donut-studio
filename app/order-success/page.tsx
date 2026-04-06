@@ -27,7 +27,7 @@ export default function OrderSuccessPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="font-display text-4xl text-[#1a1008] mb-3"
+          className="font-display text-4xl mb-3" style={{ color: "var(--text)" }}
         >
           Comandă plasată!
         </motion.h1>
@@ -35,7 +35,7 @@ export default function OrderSuccessPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="text-[#1a1008]/60 text-base leading-relaxed mb-8"
+          className="text-base leading-relaxed mb-8" style={{ color: "var(--text-60)" }}
         >
           Mulțumim pentru comanda ta! Vei primi o confirmare pe email în
           câteva minute. Gogoșile tale artizanale sunt pregătite cu drag!
@@ -49,9 +49,9 @@ export default function OrderSuccessPage() {
           className="flex justify-center gap-3 mb-10"
         >
           {[
-            "https://www.donutstudio.ro/wp-content/uploads/2024/07/Double-Chocolate.webp",
-            "https://www.donutstudio.ro/wp-content/uploads/2021/08/Raspberry-Blast.webp",
-            "https://www.donutstudio.ro/wp-content/uploads/2024/07/Pistachious.webp",
+            "/donuts/double-chocolate.webp",
+            "/donuts/raspberry-blast.webp",
+            "/donuts/pistachious.webp",
           ].map((src, i) => (
             <motion.div
               key={i}

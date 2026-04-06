@@ -2,16 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "www.donutstudio.ro",
-        pathname: "/wp-content/uploads/**",
-      },
-    ],
+    remotePatterns: [],
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
   },
+  serverExternalPackages: ["pdfkit"],
 };
 
 export default nextConfig;

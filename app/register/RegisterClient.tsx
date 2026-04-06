@@ -89,7 +89,7 @@ export default function RegisterClient() {
             style={{ background: "radial-gradient(circle, rgba(188,129,87,0.12) 0%, transparent 70%)" }} />
         </div>
         <div className="absolute inset-0 opacity-10">
-          <Image src="https://www.donutstudio.ro/wp-content/uploads/2024/07/Pistachious.webp"
+          <Image src="/donuts/pistachious.webp"
             alt="" fill className="object-cover" />
           <div className="absolute inset-0 bg-[#0d0502]/80" />
         </div>

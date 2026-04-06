@@ -51,7 +51,7 @@ export default function LoginClient() {
             style={{ background: "radial-gradient(circle, rgba(188,129,87,0.12) 0%, transparent 70%)" }} />
         </div>
         <div className="absolute inset-0 opacity-10">
-          <Image src="https://www.donutstudio.ro/wp-content/uploads/2024/07/Double-Chocolate.webp"
+          <Image src="/donuts/double-chocolate.webp"
             alt="" fill className="object-cover" />
           <div className="absolute inset-0 bg-black/80" />
         </div>
@@ -68,10 +68,10 @@ export default function LoginClient() {
           </p>
           <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
             {[
-              "https://www.donutstudio.ro/wp-content/uploads/2021/08/Raspberry-Blast.webp",
-              "https://www.donutstudio.ro/wp-content/uploads/2024/07/Pistachious.webp",
-              "https://www.donutstudio.ro/wp-content/uploads/2024/07/Oreo-Dream.webp",
-              "https://www.donutstudio.ro/wp-content/uploads/2024/07/Blueberry-Rush-1.webp",
+              "/donuts/raspberry-blast.webp",
+              "/donuts/pistachious.webp",
+              "/donuts/oreo-dream.webp",
+              "/donuts/blueberry-rush.webp",
             ].map((src, i) => (
               <div key={i} className="rounded-2xl overflow-hidden aspect-square border border-[#BC8157]/20">
                 <Image src={src} alt="" width={140} height={140} className="w-full h-full object-cover opacity-80" />

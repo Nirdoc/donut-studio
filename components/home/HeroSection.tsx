@@ -6,9 +6,9 @@ import { motion } from "framer-motion";
 import { ArrowRight, Star } from "lucide-react";
 
 const previewDonuts = [
-  "https://www.donutstudio.ro/wp-content/uploads/2024/07/Double-Chocolate.webp",
-  "https://www.donutstudio.ro/wp-content/uploads/2024/07/Vanillian.webp",
-  "https://www.donutstudio.ro/wp-content/uploads/2024/07/Oreo-Dream.webp",
+  "/donuts/double-chocolate.webp",
+  "/donuts/vanillian.webp",
+  "/donuts/oreo-dream.webp",
 ];
 
 export default function HeroSection() {
@@ -126,7 +126,7 @@ export default function HeroSection() {
               {/* Main */}
               <div className="w-full h-full rounded-full overflow-hidden shadow-2xl shadow-[#BC8157]/20 border-4 border-[#BC8157]/20 animate-float">
                 <Image
-                  src="https://www.donutstudio.ro/wp-content/uploads/2024/07/Double-Chocolate.webp"
+                  src="/donuts/double-chocolate.webp"
                   alt="Double Chocolate"
                   fill
                   className="object-cover"
@@ -142,7 +142,7 @@ export default function HeroSection() {
                 className="absolute -top-4 -left-16 bg-[var(--surface-mid)] backdrop-blur-md border border-[var(--border)] rounded-2xl p-3 flex items-center gap-3 shadow-xl"
               >
                 <div className="w-10 h-10 rounded-xl overflow-hidden">
-                  <Image src="https://www.donutstudio.ro/wp-content/uploads/2021/08/Raspberry-Blast.webp" alt="Raspberry Blast" width={40} height={40} className="object-cover w-full h-full" />
+                  <Image src="/donuts/raspberry-blast.webp" alt="Raspberry Blast" width={40} height={40} className="object-cover w-full h-full" />
                 </div>
                 <div>
                   <p className="font-semibold text-xs text-[var(--text)]">Raspberry Blast</p>
@@ -158,7 +158,7 @@ export default function HeroSection() {
                 className="absolute -bottom-4 -right-10 bg-[var(--surface-mid)] backdrop-blur-md border border-[var(--border)] rounded-2xl p-3 flex items-center gap-3 shadow-xl"
               >
                 <div className="w-10 h-10 rounded-xl overflow-hidden">
-                  <Image src="https://www.donutstudio.ro/wp-content/uploads/2024/07/Pistachious.webp" alt="Pistachious" width={40} height={40} className="object-cover w-full h-full" />
+                  <Image src="/donuts/pistachious.webp" alt="Pistachious" width={40} height={40} className="object-cover w-full h-full" />
                 </div>
                 <div>
                   <p className="font-semibold text-xs text-[var(--text)]">Pistachious</p>

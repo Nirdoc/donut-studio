@@ -47,7 +47,28 @@
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:v for k,v in {**d.get\\('dependencies',{}\\),**d.get\\('devDependencies',{}\\)}.items\\(\\) if any\\(x in k for x in ['mail','email','nodemailer','resend','sendgrid']\\)}, indent=2\\)\\)\")",
       "Bash(ls /Users/codrin.ene/vsc/donut-studio/.env*)",
       "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_lBcoMJeUb54Y@ep-hidden-unit-an1gu9aa-pooler.c-6.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require\" npx prisma:*)",
-      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_lBcoMJeUb54Y@ep-hidden-unit-an1gu9aa-pooler.c-6.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require\" npx tsx:*)"
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_lBcoMJeUb54Y@ep-hidden-unit-an1gu9aa-pooler.c-6.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require\" npx tsx:*)",
+      "Bash(sed -i '' 's|https://www.donutstudio.ro/wp-content/uploads/2024/07/Double-Chocolate.webp|/donuts/double-chocolate.webp|g' lib/products.ts app/login/LoginClient.tsx app/register/RegisterClient.tsx app/order-success/page.tsx app/povestea-noastra/PovesteaClient.tsx app/evenimente/EvenimenteClient.tsx components/home/HeroSection.tsx components/home/AboutSection.tsx components/home/CtaSection.tsx components/home/EventsSection.tsx)",
+      "Bash(sed -i '' 's|https://www.donutstudio.ro/wp-content/uploads/2024/07/Vanillian.webp|/donuts/vanillian.webp|g' lib/products.ts app/login/LoginClient.tsx app/register/RegisterClient.tsx app/order-success/page.tsx app/povestea-noastra/PovesteaClient.tsx app/evenimente/EvenimenteClient.tsx components/home/HeroSection.tsx components/home/AboutSection.tsx components/home/CtaSection.tsx components/home/EventsSection.tsx)",
+      "Bash(sed -i '' 's|https://www.donutstudio.ro/wp-content/uploads/2024/07/Orange-Blossom.webp|/donuts/orange-blossom.webp|g' lib/products.ts app/login/LoginClient.tsx app/register/RegisterClient.tsx app/order-success/page.tsx app/povestea-noastra/PovesteaClient.tsx app/evenimente/EvenimenteClient.tsx components/home/HeroSection.tsx components/home/AboutSection.tsx components/home/CtaSection.tsx components/home/EventsSection.tsx)",
+      "Bash(sed -i '' 's|https://www.donutstudio.ro/wp-content/uploads/2024/07/Banana-Fantasy.webp|/donuts/banana-fantasy.webp|g' lib/products.ts app/login/LoginClient.tsx app/register/RegisterClient.tsx app/order-success/page.tsx app/povestea-noastra/PovesteaClient.tsx app/evenimente/EvenimenteClient.tsx components/home/HeroSection.tsx components/home/AboutSection.tsx components/home/CtaSection.tsx components/home/EventsSection.tsx)",
+      "Bash(sed -i '' 's|https://www.donutstudio.ro/wp-content/uploads/2024/07/Coco-Naughty.webp|/donuts/coco-naughty.webp|g' lib/products.ts app/login/LoginClient.tsx app/register/RegisterClient.tsx app/order-success/page.tsx app/povestea-noastra/PovesteaClient.tsx app/evenimente/EvenimenteClient.tsx components/home/HeroSection.tsx components/home/AboutSection.tsx components/home/CtaSection.tsx components/home/EventsSection.tsx)",
+      "Bash(npx tsx:*)",
+      "Bash(npx dotenv-cli:*)",
+      "Bash(pdftotext:*)",
+      "Bash(brew install:*)",
+      "Bash(qlmanage -t -s 1200 -o /tmp '/Users/codrin.ene/Desktop/Factura BIT185-TUDOR CORNEL GEORGE.pdf')",
+      "Read(//private/tmp/**)",
+      "Bash(curl -sL \"https://github.com/google/fonts/raw/main/apache/roboto/Roboto%5Bwdth%2Cwght%5D.ttf\" -o /Users/codrin.ene/vsc/donut-studio/lib/fonts/Roboto.ttf)",
+      "Bash(curl -sL \"https://github.com/google/fonts/raw/main/apache/roboto/static/Roboto-Regular.ttf\" -o /Users/codrin.ene/vsc/donut-studio/lib/fonts/Roboto-Regular.ttf)",
+      "Bash(curl -sL \"https://github.com/google/fonts/raw/main/apache/roboto/static/Roboto-Bold.ttf\" -o /Users/codrin.ene/vsc/donut-studio/lib/fonts/Roboto-Bold.ttf)",
+      "Bash(file /Users/codrin.ene/vsc/donut-studio/lib/fonts/*.ttf)",
+      "Bash(curl -L \"https://github.com/google/fonts/raw/main/apache/roboto/static/Roboto-Regular.ttf\" -o /Users/codrin.ene/vsc/donut-studio/lib/fonts/Roboto-Regular.ttf)",
+      "Bash(curl -L \"https://github.com/google/fonts/raw/main/apache/roboto/static/Roboto-Bold.ttf\" -o /Users/codrin.ene/vsc/donut-studio/lib/fonts/Roboto-Bold.ttf)",
+      "Bash(curl -H \"Accept: application/octet-stream\" -L \"https://github.com/google/fonts/raw/refs/heads/main/apache/roboto/static/Roboto-Regular.ttf\" -o /Users/codrin.ene/vsc/donut-studio/lib/fonts/Roboto-Regular.ttf)",
+      "Bash(ls /System/Library/Fonts/Supplemental/Arial*.ttf)",
+      "Bash(cp \"/System/Library/Fonts/Supplemental/Arial.ttf\" /Users/codrin.ene/vsc/donut-studio/lib/fonts/Arial-Regular.ttf)",
+      "Bash(cp \"/System/Library/Fonts/Supplemental/Arial Bold.ttf\" /Users/codrin.ene/vsc/donut-studio/lib/fonts/Arial-Bold.ttf)"
     ]
   }
 }

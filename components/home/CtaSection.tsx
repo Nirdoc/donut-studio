@@ -54,12 +54,12 @@ export default function CtaSection() {
             className="hidden lg:grid grid-cols-3 gap-4"
           >
             {[
-              "https://www.donutstudio.ro/wp-content/uploads/2024/07/Double-Chocolate.webp",
-              "https://www.donutstudio.ro/wp-content/uploads/2021/08/Raspberry-Blast.webp",
-              "https://www.donutstudio.ro/wp-content/uploads/2024/07/Pistachious.webp",
-              "https://www.donutstudio.ro/wp-content/uploads/2024/07/Blueberry-Rush-1.webp",
-              "https://www.donutstudio.ro/wp-content/uploads/2024/07/Caramel-Dash.webp",
-              "https://www.donutstudio.ro/wp-content/uploads/2024/07/Oreo-Dream.webp",
+              "/donuts/double-chocolate.webp",
+              "/donuts/raspberry-blast.webp",
+              "/donuts/pistachious.webp",
+              "/donuts/blueberry-rush.webp",
+              "/donuts/caramel-dash.webp",
+              "/donuts/oreo-dream.webp",
             ].map((src, i) => (
               <motion.div
                 key={i}

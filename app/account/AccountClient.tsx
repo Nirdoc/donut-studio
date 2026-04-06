@@ -16,8 +16,8 @@ const mockOrders = [
     total: 48,
     status: "livrat",
     images: [
-      "https://www.donutstudio.ro/wp-content/uploads/2024/07/Double-Chocolate.webp",
-      "https://www.donutstudio.ro/wp-content/uploads/2024/07/Oreo-Dream.webp",
+      "/donuts/double-chocolate.webp",
+      "/donuts/oreo-dream.webp",
     ],
   },
   {
@@ -27,8 +27,8 @@ const mockOrders = [
     total: 60,
     status: "livrat",
     images: [
-      "https://www.donutstudio.ro/wp-content/uploads/2024/07/Pistachious.webp",
-      "https://www.donutstudio.ro/wp-content/uploads/2024/07/Caramel-Dash.webp",
+      "/donuts/pistachious.webp",
+      "/donuts/caramel-dash.webp",
     ],
   },
 ];

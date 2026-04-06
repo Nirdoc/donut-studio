@@ -57,12 +57,12 @@ const timeline = [
 ];
 
 const donutGrid = [
-  "https://www.donutstudio.ro/wp-content/uploads/2024/07/Double-Chocolate.webp",
-  "https://www.donutstudio.ro/wp-content/uploads/2024/07/Pistachious.webp",
-  "https://www.donutstudio.ro/wp-content/uploads/2024/07/Oreo-Dream.webp",
-  "https://www.donutstudio.ro/wp-content/uploads/2024/07/Caramel-Dash.webp",
-  "https://www.donutstudio.ro/wp-content/uploads/2021/08/Raspberry-Blast.webp",
-  "https://www.donutstudio.ro/wp-content/uploads/2024/07/Orange-Blossom.webp",
+  "/donuts/double-chocolate.webp",
+  "/donuts/pistachious.webp",
+  "/donuts/oreo-dream.webp",
+  "/donuts/caramel-dash.webp",
+  "/donuts/raspberry-blast.webp",
+  "/donuts/orange-blossom.webp",
 ];
 
 const reviews = [
@@ -99,7 +99,7 @@ export default function PovesteaClient() {
         {/* Large faded donut image right side */}
         <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-15 hidden lg:block">
           <Image
-            src="https://www.donutstudio.ro/wp-content/uploads/2024/07/Double-Chocolate.webp"
+            src="/donuts/double-chocolate.webp"
             alt=""
             fill
             className="object-cover object-center"

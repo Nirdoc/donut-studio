@@ -13,28 +13,28 @@ const services = [
     icon: Heart,
     title: "Nunți",
     desc: "Transformă masa dulce a nunții tale într-un moment iconic. Donut wall-ul nostru devine centrul atenției — eleganță pură, gust de neuitat.",
-    image: "https://www.donutstudio.ro/wp-content/uploads/2024/07/Caramel-Dash.webp",
+    image: "/donuts/caramel-dash.webp",
     color: "from-rose-900/80 to-rose-950/90",
   },
   {
     icon: Baby,
     title: "Botezuri",
     desc: "Celebrează cele mai duioase momente cu aranjamente delicate de mini-gogoși, croite după culorile și tema botezului.",
-    image: "https://www.donutstudio.ro/wp-content/uploads/2024/07/Blueberry-Rush-1.webp",
+    image: "/donuts/blueberry-rush.webp",
     color: "from-sky-900/80 to-sky-950/90",
   },
   {
     icon: Cake,
     title: "Zile de naștere",
     desc: "Renunță la tortul clasic. Un donut wall personalizat este cadoul perfect — surprinzător, delicios, fotogenic.",
-    image: "https://www.donutstudio.ro/wp-content/uploads/2024/07/Oreo-Dream.webp",
+    image: "/donuts/oreo-dream.webp",
     color: "from-violet-900/80 to-violet-950/90",
   },
   {
     icon: Building2,
     title: "Corporate Events",
     desc: "Impresionează-ți colegii și partenerii cu cutii de mini-gogoși asortate — ideale pentru conferințe, team-buildinguri sau lansări.",
-    image: "https://www.donutstudio.ro/wp-content/uploads/2024/07/Coffeelicious.webp",
+    image: "/donuts/coffeelicious.webp",
     color: "from-stone-900/80 to-stone-950/90",
   },
 ];
@@ -67,14 +67,14 @@ const reviews = [
 ];
 
 const donutImages = [
-  "https://www.donutstudio.ro/wp-content/uploads/2024/07/Double-Chocolate.webp",
-  "https://www.donutstudio.ro/wp-content/uploads/2024/07/Pistachious.webp",
-  "https://www.donutstudio.ro/wp-content/uploads/2024/07/Almond-Famous-1.webp",
-  "https://www.donutstudio.ro/wp-content/uploads/2024/07/Honey-Buzz.webp",
-  "https://www.donutstudio.ro/wp-content/uploads/2024/07/Orange-Blossom.webp",
-  "https://www.donutstudio.ro/wp-content/uploads/2024/07/Banana-Fantasy.webp",
-  "https://www.donutstudio.ro/wp-content/uploads/2024/07/Coco-Naughty.webp",
-  "https://www.donutstudio.ro/wp-content/uploads/2024/07/Vanillian.webp",
+  "/donuts/double-chocolate.webp",
+  "/donuts/pistachious.webp",
+  "/donuts/almond-famous.webp",
+  "/donuts/honey-buzz.webp",
+  "/donuts/orange-blossom.webp",
+  "/donuts/banana-fantasy.webp",
+  "/donuts/coco-naughty.webp",
+  "/donuts/vanillian.webp",
 ];
 
 export default function EvenimenteClient() {
@@ -225,10 +225,10 @@ export default function EvenimenteClient() {
               className="grid grid-cols-2 gap-4"
             >
               {[
-                "https://www.donutstudio.ro/wp-content/uploads/2024/07/Almond-Famous-1.webp",
-                "https://www.donutstudio.ro/wp-content/uploads/2024/07/Caramel-Dash.webp",
-                "https://www.donutstudio.ro/wp-content/uploads/2024/07/Honey-Buzz.webp",
-                "https://www.donutstudio.ro/wp-content/uploads/2024/07/Pistachious.webp",
+                "/donuts/almond-famous.webp",
+                "/donuts/caramel-dash.webp",
+                "/donuts/honey-buzz.webp",
+                "/donuts/pistachious.webp",
               ].map((src, i) => (
                 <motion.div
                   key={i}

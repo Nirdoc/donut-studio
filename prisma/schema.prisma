@@ -28,6 +28,8 @@ model User {
 
   tokens       VerificationToken[]
   resetTokens  PasswordResetToken[]
+  comenzi      Comanda[]
+  facturi      Factura[]
 }
 
 model Gogoasa {
@@ -55,6 +57,92 @@ model Gogoasa {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Comanda {
+  id           String      @id @default(cuid())
+  orderNumber  String      @unique
+
+  userId       String?
+  user         User?       @relation(fields: [userId], references: [id])
+
+  deliveryDate String
+  deliveryTime String
+
+  firstName    String
+  lastName     String
+  email        String
+  phone        String
+  cui          String?
+
+  judet        String
+  city         String
+  street       String
+  number       String
+  dwellingType String
+  bloc         String?
+  scara        String?
+  etaj         String?
+  apartament   String?
+
+  hasDiffDelivery Boolean @default(false)
+  delJudet     String?
+  delCity      String?
+  delStreet    String?
+  delNumber    String?
+  delType      String?
+  delBloc      String?
+  delScara     String?
+  delEtaj      String?
+  delApartament String?
+
+  paymentMethod String
+  deliveryFee   Float
+  subtotal      Float
+  total         Float
+
+  items        Json
+
+  status       String   @default("PENDING")
+
+  factura      Factura?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Factura {
+  id            String   @id @default(cuid())
+  facturaNumber String   @unique
+
+  comandaId     String   @unique
+  comanda       Comanda  @relation(fields: [comandaId], references: [id])
+
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+
+  firstName     String
+  lastName      String
+  email         String
+  phone         String
+  cui           String?
+  judet         String
+  city          String
+  street        String
+  number        String
+  dwellingType  String
+  bloc          String?
+
+  subtotal      Float
+  deliveryFee   Float
+  total         Float
+
+  items         Json
+
+  emailed       Boolean  @default(false)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model VerificationToken {

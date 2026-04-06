@@ -6,16 +6,55 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Category {
+  classic
+  fruity
+  premium
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String
   email        String   @unique
   passwordHash String
   verified     Boolean  @default(false)
+  role         Role     @default(USER)
   createdAt    DateTime @default(now())
 
   tokens       VerificationToken[]
   resetTokens  PasswordResetToken[]
+}
+
+model Gogoasa {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  price       Float
+  image       String
+  description String
+  ingredients String[]
+  allergens   String[]
+  calories    Int
+  category    Category
+  available   Boolean  @default(true)
+
+  kcalServing    Float
+  fatServing     Float
+  carbsServing   Float
+  proteinServing Float
+
+  kcal100g    Float
+  fat100g     Float
+  carbs100g   Float
+  protein100g Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model VerificationToken {

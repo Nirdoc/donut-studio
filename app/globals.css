@@ -50,6 +50,9 @@
 
   /* Logo: white-on-dark */
   --logo-filter: brightness(0) invert(1);
+
+  /* Brand text — readable on any bg */
+  --brand-text: #BC8157;
 }
 
 /* ─── Light theme ───────────────────────────── */
@@ -93,6 +96,8 @@
   --input-border:      rgba(188,129,87,0.35);
 
   --logo-filter: none;
+
+  --brand-text: #7a4a28;
 }
 
 @theme inline {

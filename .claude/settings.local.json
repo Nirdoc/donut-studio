@@ -45,7 +45,9 @@
       "Bash(curl -s \"https://www.donutstudio.ro/politica-de-livrare/\")",
       "Bash(curl -s \"https://www.donutstudio.ro/modalitati-de-plata/\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:v for k,v in {**d.get\\('dependencies',{}\\),**d.get\\('devDependencies',{}\\)}.items\\(\\) if any\\(x in k for x in ['mail','email','nodemailer','resend','sendgrid']\\)}, indent=2\\)\\)\")",
-      "Bash(ls /Users/codrin.ene/vsc/donut-studio/.env*)"
+      "Bash(ls /Users/codrin.ene/vsc/donut-studio/.env*)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_lBcoMJeUb54Y@ep-hidden-unit-an1gu9aa-pooler.c-6.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require\" npx prisma:*)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_lBcoMJeUb54Y@ep-hidden-unit-an1gu9aa-pooler.c-6.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require\" npx tsx:*)"
     ]
   }
 }

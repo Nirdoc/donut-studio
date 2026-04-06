@@ -33,7 +33,7 @@ export default function LoginClient() {
         setError(data.error ?? "Eroare necunoscută.");
       } else {
         login(data.user, data.token);
-        router.push("/account");
+        router.push("/");
       }
     } catch {
       setError("Nu s-a putut conecta la server. Încearcă din nou.");

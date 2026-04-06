@@ -43,7 +43,7 @@ export default async function ProductPage({
   const { nutrition } = product;
 
   return (
-    <div className="section-base min-h-screen pt-24 pb-16">
+    <div className="section-base min-h-screen pt-28 pb-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back */}
         <Link

@@ -68,7 +68,13 @@
       "Bash(curl -H \"Accept: application/octet-stream\" -L \"https://github.com/google/fonts/raw/refs/heads/main/apache/roboto/static/Roboto-Regular.ttf\" -o /Users/codrin.ene/vsc/donut-studio/lib/fonts/Roboto-Regular.ttf)",
       "Bash(ls /System/Library/Fonts/Supplemental/Arial*.ttf)",
       "Bash(cp \"/System/Library/Fonts/Supplemental/Arial.ttf\" /Users/codrin.ene/vsc/donut-studio/lib/fonts/Arial-Regular.ttf)",
-      "Bash(cp \"/System/Library/Fonts/Supplemental/Arial Bold.ttf\" /Users/codrin.ene/vsc/donut-studio/lib/fonts/Arial-Bold.ttf)"
+      "Bash(cp \"/System/Library/Fonts/Supplemental/Arial Bold.ttf\" /Users/codrin.ene/vsc/donut-studio/lib/fonts/Arial-Bold.ttf)",
+      "Bash(rsvg-convert --version)",
+      "Bash(sips --help)",
+      "Bash(qlmanage -t -s 200 -o /Users/codrin.ene/vsc/donut-studio/lib/fonts/ /Users/codrin.ene/vsc/donut-studio/public/logo.svg)",
+      "Bash(npm show:*)",
+      "Bash(identify /Users/codrin.ene/vsc/donut-studio/app/icon.png)",
+      "Bash(sips -g all /Users/codrin.ene/vsc/donut-studio/app/icon.png)"
     ]
   }
 }

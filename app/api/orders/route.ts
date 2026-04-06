@@ -3,6 +3,31 @@ import { prisma } from "@/lib/db";
 import { verifyAuth } from "@/lib/auth";
 import { sendOrderConfirmation } from "@/lib/email";
 
+export async function GET(req: NextRequest) {
+  try {
+    const { id } = verifyAuth(req);
+    const orders = await prisma.comanda.findMany({
+      where: { userId: id },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        orderNumber: true,
+        createdAt: true,
+        items: true,
+        subtotal: true,
+        deliveryFee: true,
+        total: true,
+        status: true,
+        deliveryDate: true,
+        deliveryTime: true,
+      },
+    });
+    return NextResponse.json(orders);
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+}
+
 async function nextOrderNumber(): Promise<string> {
   const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   const count = await prisma.comanda.count();
@@ -66,8 +91,8 @@ export async function POST(req: NextRequest) {
     try {
       await sendOrderConfirmation({
         orderNumber,
-        firstName: contact.firstName,
-        email:     contact.email,
+        firstName:    contact.firstName,
+        email:        contact.email,
         deliveryDate,
         deliveryTime,
         paymentMethod,
@@ -75,6 +100,18 @@ export async function POST(req: NextRequest) {
         subtotal,
         deliveryFee,
         total,
+        billingName:   `${contact.firstName} ${contact.lastName}`,
+        billingStreet: billingAddr.street,
+        billingNumber: billingAddr.number,
+        billingCity:   billingAddr.city,
+        billingJudet:  billingAddr.judet,
+        billingBloc:   billingAddr.bloc || null,
+        hasDiffDelivery: !!differentDelivery,
+        deliveryStreet: differentDelivery ? deliveryAddr?.street  : undefined,
+        deliveryNumber: differentDelivery ? deliveryAddr?.number  : undefined,
+        deliveryCity:   differentDelivery ? deliveryAddr?.city    : undefined,
+        deliveryJudet:  differentDelivery ? deliveryAddr?.judet   : undefined,
+        deliveryBloc:   differentDelivery ? deliveryAddr?.bloc || null : undefined,
       });
     } catch (emailErr) {
       console.error("Confirmation email failed:", emailErr);

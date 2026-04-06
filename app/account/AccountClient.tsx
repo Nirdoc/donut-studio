@@ -1,133 +1,219 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/lib/store";
-import { User, ShoppingBag, MapPin, LogOut, Phone, Mail, Clock } from "lucide-react";
+import {
+  User, ShoppingBag, MapPin, LogOut, Phone, Mail, Clock,
+  CalendarDays, ChevronDown, ChevronLeft, ChevronRight,
+} from "lucide-react";
 
-const mockOrders = [
-  {
-    id: "#DS2024-001",
-    date: "01 Apr 2025",
-    items: ["Double Chocolate ×2", "Oreo Dream ×1", "Raspberry Blast ×1"],
-    total: 48,
-    status: "livrat",
-    images: [
-      "/donuts/double-chocolate.webp",
-      "/donuts/oreo-dream.webp",
-    ],
-  },
-  {
-    id: "#DS2024-002",
-    date: "28 Mar 2025",
-    items: ["Pistachious ×3", "Caramel Dash ×2"],
-    total: 60,
-    status: "livrat",
-    images: [
-      "/donuts/pistachious.webp",
-      "/donuts/caramel-dash.webp",
-    ],
-  },
-];
-
-const statusColors: Record<string, string> = {
-  livrat: "bg-green-100 text-green-700",
-  "în procesare": "bg-amber-100 text-amber-700",
-  anulat: "bg-red-100 text-red-600",
+type OrderItem = { name: string; price: number; quantity: number };
+type Order = {
+  id: string; orderNumber: string; createdAt: string;
+  items: OrderItem[]; subtotal: number; deliveryFee: number;
+  total: number; status: string; deliveryDate: string; deliveryTime: string;
 };
+
+const STATUS: Record<string, { label: string; dot: string; badge: string }> = {
+  PENDING:   { label: "În procesare", dot: "bg-amber-400",  badge: "bg-amber-400/15 text-amber-400" },
+  FINALIZAT: { label: "Finalizat",    dot: "bg-green-400",  badge: "bg-green-400/15  text-green-400" },
+  ANULAT:    { label: "Anulat",       dot: "bg-red-400",    badge: "bg-red-400/15    text-red-400"   },
+};
+
+const PAGE_SIZE = 5;
+
+function OrderRow({ order, index }: { order: Order; index: number }) {
+  const [open, setOpen] = useState(false);
+  const s = STATUS[order.status] ?? { label: order.status, dot: "bg-gray-400", badge: "bg-gray-400/15 text-gray-400" };
+  const totalQty = order.items.reduce((a, i) => a + i.quantity, 0);
+  const fmtDelivery = new Date(order.deliveryDate + "T12:00:00").toLocaleDateString("ro-RO", { day: "numeric", month: "short" });
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className="card rounded-2xl overflow-hidden"
+    >
+      {/* Collapsed header — always visible */}
+      <button
+        type="button"
+        onClick={() => setOpen((p) => !p)}
+        className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-white/[0.02] transition-colors group"
+      >
+        {/* Status dot */}
+        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${s.dot}`} />
+
+        {/* Order number */}
+        <span className="font-mono font-semibold text-sm text-white flex-shrink-0 w-36 truncate">
+          {order.orderNumber}
+        </span>
+
+        {/* Delivery date */}
+        <span className="hidden sm:flex items-center gap-1.5 text-xs text-white/40 flex-shrink-0">
+          <CalendarDays size={11} />
+          {fmtDelivery}
+        </span>
+
+        {/* Item summary */}
+        <span className="text-xs text-white/40 flex-1 truncate hidden md:block">
+          {order.items.map((i) => `${i.name} ×${i.quantity}`).join("  ·  ")}
+        </span>
+        <span className="text-xs text-white/40 md:hidden flex-1">
+          {totalQty} produs{totalQty !== 1 ? "e" : ""}
+        </span>
+
+        {/* Status badge */}
+        <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full flex-shrink-0 hidden sm:block ${s.badge}`}>
+          {s.label}
+        </span>
+
+        {/* Total */}
+        <span className="font-bold text-sm text-[var(--text)] flex-shrink-0 w-20 text-right">
+          {order.total.toFixed(2)} lei
+        </span>
+
+        {/* Chevron */}
+        <ChevronDown
+          size={15}
+          className={`text-white/30 flex-shrink-0 transition-transform duration-200 group-hover:text-white/60 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {/* Expanded details */}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="details"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="px-5 pb-5 border-t border-white/5 pt-4 space-y-3">
+
+              {/* Meta row */}
+              <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-white/40">
+                <span>Plasată: {new Date(order.createdAt).toLocaleDateString("ro-RO", { day: "numeric", month: "long", year: "numeric" })}</span>
+                <span className="sm:hidden">Status: {s.label}</span>
+                <span>Livrare: {fmtDelivery}{order.deliveryTime ? ` · ${order.deliveryTime}` : ""}</span>
+                {order.deliveryFee > 0
+                  ? <span>Taxă livrare: {order.deliveryFee.toFixed(2)} lei</span>
+                  : <span>Ridicare din magazin</span>}
+              </div>
+
+              {/* Items */}
+              <div className="divide-y divide-white/5 rounded-xl overflow-hidden">
+                {order.items.map((item, j) => (
+                  <div key={j} className="flex items-center gap-3 py-2.5 px-3 bg-white/[0.03]">
+                    <span className="text-sm text-white/80 flex-1">{item.name}</span>
+                    <span className="text-xs text-white/35 w-8 text-center">×{item.quantity}</span>
+                    <span className="text-sm font-medium text-white/70 w-20 text-right">
+                      {(item.price * item.quantity).toFixed(2)} lei
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Total line */}
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-xs text-white/35">Subtotal fără TVA: {(order.total / 1.19).toFixed(2)} lei · TVA 19%: {(order.total - order.total / 1.19).toFixed(2)} lei</span>
+                <span className="font-bold text-base text-[#BC8157]">{order.total.toFixed(2)} lei</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
 
 export default function AccountClient() {
   const router = useRouter();
-  const user = useAuthStore((s) => s.user);
+  const user   = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
 
+  const [orders, setOrders]   = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage]       = useState(0);
+
   useEffect(() => {
-    if (!user) {
-      router.push("/login");
-    }
+    if (!user) { router.push("/login"); return; }
+    fetch("/api/orders", {
+      headers: { Authorization: `Bearer ${useAuthStore.getState().token}` },
+    })
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setOrders(data); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [user, router]);
 
   if (!user) return null;
 
-  const handleLogout = () => {
-    logout();
-    router.push("/");
-  };
+  const totalPages  = Math.ceil(orders.length / PAGE_SIZE);
+  const pageOrders  = orders.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
   return (
-    <div className="min-h-screen bg-transparent pt-24 pb-16">
+    <div className="min-h-screen bg-transparent pt-28 pb-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
           <div>
             <h1 className="font-display text-4xl text-[var(--text)]">Contul meu</h1>
-            <p className="text-white text-sm mt-1">
-              Hei, {user.name}! 👋
-            </p>
+            <p className="text-white/60 text-sm mt-1">Hei, {user.name}! 👋</p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="inline-flex items-center gap-2 text-sm text-red-400 hover:text-red-600 transition-colors border border-red-200 px-4 py-2 rounded-full"
-          >
+          <button onClick={() => { logout(); router.push("/"); }}
+            className="inline-flex items-center gap-2 text-sm text-red-400 hover:text-red-500 transition-colors border border-red-400/20 px-4 py-2 rounded-full">
             <LogOut size={15} />
             Deconectare
           </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Sidebar */}
+
+          {/* ── Sidebar ── */}
           <div className="space-y-4">
-            {/* Profile card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="card rounded-3xl p-6"
-            >
+            {/* Profile */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="card rounded-3xl p-6">
               <div className="flex items-center gap-4 mb-5">
-                <div className="w-14 h-14 rounded-2xl bg-[#BC8157] flex items-center justify-center">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#BC8157] to-[#9a6540] flex items-center justify-center shadow-lg">
                   <User size={24} className="text-white" />
                 </div>
                 <div>
                   <p className="font-semibold text-white">{user.name}</p>
-                  <p className="text-white text-xs">{user.email}</p>
+                  <p className="text-white/50 text-xs mt-0.5">{user.email}</p>
                 </div>
               </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-[var(--text-80)] text-sm">
-                  <Mail size={14} className="text-white" />
-                  {user.email}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white/5 rounded-xl p-3 text-center">
+                  <p className="font-bold text-xl text-white">{loading ? "—" : orders.length}</p>
+                  <p className="text-white/40 text-xs mt-0.5">Comenzi</p>
                 </div>
-                <div className="flex items-center gap-2 text-[var(--text-80)] text-sm">
-                  <ShoppingBag size={14} className="text-white" />
-                  {mockOrders.length} comenzi plasate
+                <div className="bg-white/5 rounded-xl p-3 text-center">
+                  <p className="font-bold text-xl text-white">
+                    {loading ? "—" : orders.filter((o) => o.status === "FINALIZAT").length}
+                  </p>
+                  <p className="text-white/40 text-xs mt-0.5">Finalizate</p>
                 </div>
               </div>
             </motion.div>
 
             {/* Quick links */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="card rounded-3xl p-5"
-            >
-              <h3 className="font-semibold text-sm text-white mb-3 uppercase tracking-wider">
-                Acces rapid
-              </h3>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card rounded-3xl p-5">
+              <h3 className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-3">Acces rapid</h3>
               <div className="space-y-1">
                 {[
                   { icon: ShoppingBag, label: "Mergi la meniu", href: "/menu" },
                   { icon: MapPin, label: "Locația noastră", href: "#" },
                 ].map((item) => (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#BC8157]/5 transition-colors text-sm text-[var(--text-70)] hover:text-[#BC8157]"
-                  >
-                    <item.icon size={16} />
+                  <Link key={item.label} href={item.href}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#BC8157]/8 transition-colors text-sm text-white/50 hover:text-[#BC8157]">
+                    <item.icon size={15} />
                     {item.label}
                   </Link>
                 ))}
@@ -135,93 +221,112 @@ export default function AccountClient() {
             </motion.div>
 
             {/* Contact */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="bg-[#BC8157] rounded-3xl p-5 text-white"
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+              className="bg-gradient-to-br from-[#BC8157] to-[#9a6540] rounded-3xl p-5 text-white">
               <p className="font-semibold text-sm mb-3">Ai nevoie de ajutor?</p>
               <div className="space-y-2 text-white/80 text-xs">
-                <div className="flex items-center gap-2">
-                  <Phone size={12} />
-                  <a href="tel:0745018888" className="hover:text-white">0745 018 888</a>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Mail size={12} />
-                  <a href="mailto:contact@donutstudio.ro" className="hover:text-white">contact@donutstudio.ro</a>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock size={12} />
-                  <span>Lun–Vin: 11:00–19:00</span>
-                </div>
+                <div className="flex items-center gap-2"><Phone size={12} /><a href="tel:0745018888" className="hover:text-white">0745 018 888</a></div>
+                <div className="flex items-center gap-2"><Mail size={12} /><a href="mailto:contact@donutstudio.ro" className="hover:text-white">contact@donutstudio.ro</a></div>
+                <div className="flex items-center gap-2"><Clock size={12} /><span>Lun–Vin: 11:00–19:00</span></div>
               </div>
             </motion.div>
           </div>
 
-          {/* Orders */}
+          {/* ── Orders panel ── */}
           <div className="lg:col-span-2">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
-            >
-              <h2 className="font-display text-2xl text-white mb-5">
-                Istoricul comenzilor
-              </h2>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
 
-              <div className="space-y-4">
-                {mockOrders.map((order, i) => (
-                  <motion.div
-                    key={order.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1 + 0.1 }}
-                    className="card rounded-3xl p-5 sm:p-6"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                      <div>
-                        <p className="font-bold text-white font-mono">{order.id}</p>
-                        <p className="text-white text-xs mt-0.5">{order.date}</p>
-                      </div>
-                      <span className={`text-xs font-medium px-3 py-1 rounded-full self-start sm:self-auto ${statusColors[order.status]}`}>
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="flex -space-x-2">
-                        {order.images.map((src, j) => (
-                          <div key={j} className="w-9 h-9 rounded-full overflow-hidden border-2 border-white shadow-sm">
-                            <Image src={src} alt="" width={36} height={36} className="object-cover w-full h-full" />
-                          </div>
-                        ))}
-                      </div>
-                      <div className="text-sm text-[var(--text-55)]">
-                        {order.items.join(", ")}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-3 border-t border-[#BC8157]/8">
-                      <span className="text-sm text-[var(--text-45)]">Total comandă</span>
-                      <span className="font-bold text-[var(--text)]">{order.total} lei</span>
-                    </div>
-                  </motion.div>
-                ))}
-
-                {mockOrders.length === 0 && (
-                  <div className="card rounded-3xl p-10 text-center">
-                    <ShoppingBag size={40} className="text-[#BC8157]/30 mx-auto mb-4" />
-                    <p className="text-[#1a1008]/50 mb-4">Nu ai nicio comandă încă.</p>
-                    <Link
-                      href="/menu"
-                      className="inline-flex items-center gap-2 bg-[#BC8157] text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-[#9a6540] transition-colors"
-                    >
-                      Descoperă meniul
-                    </Link>
-                  </div>
+              {/* Panel header */}
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-display text-2xl text-white">Istoricul comenzilor</h2>
+                {!loading && orders.length > 0 && (
+                  <span className="text-xs text-white/30">{orders.length} comenzi</span>
                 )}
               </div>
+
+              {/* Column labels */}
+              {!loading && orders.length > 0 && (
+                <div className="flex items-center gap-3 px-5 mb-2 text-[11px] font-medium text-white/25 uppercase tracking-wider">
+                  <span className="w-2" />
+                  <span className="w-36">Comandă</span>
+                  <span className="hidden sm:block w-16">Livrare</span>
+                  <span className="flex-1 hidden md:block">Produse</span>
+                  <span className="flex-1 md:hidden">Produse</span>
+                  <span className="hidden sm:block w-24 text-center">Status</span>
+                  <span className="w-20 text-right">Total</span>
+                  <span className="w-4" />
+                </div>
+              )}
+
+              {/* Loading skeleton */}
+              {loading ? (
+                <div className="space-y-2">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="card rounded-2xl px-5 py-4 animate-pulse flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-white/10" />
+                      <div className="h-3 bg-white/10 rounded w-32" />
+                      <div className="h-3 bg-white/10 rounded w-20 hidden sm:block" />
+                      <div className="h-3 bg-white/10 rounded flex-1 hidden md:block" />
+                      <div className="h-5 bg-white/10 rounded-full w-20 hidden sm:block" />
+                      <div className="h-3 bg-white/10 rounded w-16 ml-auto" />
+                    </div>
+                  ))}
+                </div>
+              ) : orders.length === 0 ? (
+                <div className="card rounded-3xl p-12 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-[#BC8157]/10 flex items-center justify-center mx-auto mb-4">
+                    <ShoppingBag size={28} className="text-[#BC8157]/40" />
+                  </div>
+                  <p className="text-white/40 text-sm mb-5">Nu ai nicio comandă încă.</p>
+                  <Link href="/menu"
+                    className="inline-flex items-center gap-2 bg-[#BC8157] text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-[#9a6540] transition-colors">
+                    Descoperă meniul
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    {pageOrders.map((order, i) => (
+                      <OrderRow key={order.id} order={order} index={i} />
+                    ))}
+                  </div>
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-between mt-5 pt-4 border-t border-white/5">
+                      <span className="text-xs text-white/30">
+                        {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, orders.length)} din {orders.length}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setPage((p) => p - 1)}
+                          disabled={page === 0}
+                          className="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-white/25 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        >
+                          <ChevronLeft size={14} />
+                        </button>
+                        {Array.from({ length: totalPages }).map((_, i) => (
+                          <button key={i} onClick={() => setPage(i)}
+                            className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
+                              i === page
+                                ? "bg-[#BC8157] text-white"
+                                : "border border-white/10 text-white/40 hover:text-white hover:border-white/25"
+                            }`}>
+                            {i + 1}
+                          </button>
+                        ))}
+                        <button
+                          onClick={() => setPage((p) => p + 1)}
+                          disabled={page === totalPages - 1}
+                          className="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-white/25 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        >
+                          <ChevronRight size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </motion.div>
           </div>
         </div>

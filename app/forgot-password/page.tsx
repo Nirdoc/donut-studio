@@ -31,7 +31,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="section-warm min-h-screen flex items-center justify-center px-4 pt-20">
+    <div className="section-warm min-h-screen flex items-center justify-center px-4 pt-28">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
         <Link href="/login"
           className="inline-flex items-center gap-2 text-[var(--text-50)] hover:text-[#BC8157] text-sm mb-8 transition-colors">

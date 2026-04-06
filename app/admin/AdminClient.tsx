@@ -720,6 +720,7 @@ interface AdminOrder {
 }
 
 const statusConfig: Record<string, { label: string; cls: string }> = {
+  PENDING_PAYMENT: { label: "Plată în curs", cls: "bg-purple-500/12 text-purple-600 border-purple-500/25" },
   PENDING:    { label: "În așteptare", cls: "bg-amber-500/12 text-amber-600 border-amber-500/25" },
   PROCESSING: { label: "În procesare", cls: "bg-blue-500/12 text-blue-600 border-blue-500/25" },
   FINALIZAT:  { label: "Finalizat",    cls: "bg-green-500/12 text-green-600 border-green-500/25" },
@@ -739,6 +740,7 @@ function ComenziTab({ token }: { token: string }) {
   const [filterStatus, setFilterStatus] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [marking, setMarking] = useState<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -756,6 +758,7 @@ function ComenziTab({ token }: { token: string }) {
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
   const markFinalizat = async (id: string) => {
+    setConfirmId(null);
     setMarking(id);
     try {
       await fetch(`/api/admin/orders/${id}`, {
@@ -769,6 +772,31 @@ function ComenziTab({ token }: { token: string }) {
 
   return (
     <div className="space-y-4">
+      {/* Confirm dialog */}
+      {confirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="card rounded-2xl p-6 w-80 shadow-2xl space-y-4">
+            <p className="text-sm font-semibold text-[var(--text)]">Confirmare schimbare status</p>
+            <p className="text-sm" style={{ color: "var(--text-60)" }}>
+              Ești sigur că vrei să marchezi această comandă ca <span className="font-semibold text-green-600">Finalizat</span>?
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setConfirmId(null)}
+                className="px-4 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-[#BC8157]/10 text-[var(--text)]"
+              >
+                Anulează
+              </button>
+              <button
+                onClick={() => markFinalizat(confirmId)}
+                className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-green-600 hover:bg-green-700 transition-colors"
+              >
+                Da, finalizează
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -860,7 +888,7 @@ function ComenziTab({ token }: { token: string }) {
                         <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
                           {o.status !== "FINALIZAT" && o.status !== "ANULAT" && (
                             <button
-                              onClick={() => markFinalizat(o.id)}
+                              onClick={() => setConfirmId(o.id)}
                               disabled={marking === o.id}
                               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 transition-colors"
                             >
@@ -1041,7 +1069,7 @@ export default function AdminClient() {
   if (!user || user.role !== "ADMIN") return null;
 
   return (
-    <div className="min-h-screen pt-20 pb-12">
+    <div className="min-h-screen pt-28 pb-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Page header */}

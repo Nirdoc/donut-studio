@@ -126,6 +126,16 @@ export interface OrderEmailData {
   deliveryDate: string; deliveryTime: string; paymentMethod: string;
   items: Array<{ name: string; price: number; quantity: number }>;
   subtotal: number; deliveryFee: number; total: number;
+  // Billing address
+  billingName: string;
+  billingStreet: string; billingNumber: string;
+  billingCity: string; billingJudet: string;
+  billingBloc?: string | null;
+  // Delivery address (may differ)
+  hasDiffDelivery: boolean;
+  deliveryStreet?: string; deliveryNumber?: string;
+  deliveryCity?: string; deliveryJudet?: string;
+  deliveryBloc?: string | null;
 }
 
 export async function sendOrderConfirmation(data: OrderEmailData) {
@@ -176,7 +186,7 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
         <td style="color:#BC8157;font-size:15px;font-weight:800;text-align:right;padding:10px 0 4px;">${data.total.toFixed(2)} lei</td>
       </tr>
     </table>
-    <table width="100%" cellpadding="0" cellspacing="0">
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
       <tr>
         <td width="50%" style="padding-right:8px;">
           <div style="background:rgba(188,129,87,0.08);border:1px solid rgba(188,129,87,0.15);border-radius:10px;padding:12px 14px;">
@@ -193,15 +203,53 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
         </td>
       </tr>
     </table>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+      <tr>
+        <td width="50%" style="padding-right:8px;vertical-align:top;">
+          <div style="background:rgba(188,129,87,0.08);border:1px solid rgba(188,129,87,0.15);border-radius:10px;padding:12px 14px;">
+            <p style="margin:0 0 6px;color:rgba(240,221,200,0.40);font-size:10px;text-transform:uppercase;letter-spacing:0.08em;">Adresă facturare</p>
+            <p style="margin:0;color:#f0ddc8;font-size:13px;font-weight:600;">${data.billingName}</p>
+            <p style="margin:3px 0 0;color:rgba(240,221,200,0.65);font-size:12px;line-height:1.5;">
+              ${data.billingStreet}, Nr. ${data.billingNumber}${data.billingBloc ? `, Bl. ${data.billingBloc}` : ""}<br>
+              ${data.billingCity}, ${data.billingJudet}
+            </p>
+          </div>
+        </td>
+        <td width="50%" style="padding-left:8px;vertical-align:top;">
+          <div style="background:rgba(188,129,87,0.08);border:1px solid rgba(188,129,87,0.15);border-radius:10px;padding:12px 14px;">
+            <p style="margin:0 0 6px;color:rgba(240,221,200,0.40);font-size:10px;text-transform:uppercase;letter-spacing:0.08em;">Adresă livrare</p>
+            ${data.hasDiffDelivery
+              ? `<p style="margin:0;color:rgba(240,221,200,0.65);font-size:12px;line-height:1.5;">
+                  ${data.deliveryStreet}, Nr. ${data.deliveryNumber}${data.deliveryBloc ? `, Bl. ${data.deliveryBloc}` : ""}<br>
+                  ${data.deliveryCity}, ${data.deliveryJudet}
+                </p>`
+              : `<p style="margin:0;color:rgba(240,221,200,0.65);font-size:12px;line-height:1.5;">Aceeași cu adresa de facturare</p>`
+            }
+          </div>
+        </td>
+      </tr>
+    </table>
     ${invoiceNote}
   `;
 
-  await createTransporter().sendMail({
-    from: process.env.SMTP_FROM ?? "Donut Studio <noreply@donutstudio.ro>",
-    to: data.email,
-    subject: `Comandă confirmată ${data.orderNumber} — Donut Studio`,
-    html: emailShell(body),
-  });
+  const transporter = createTransporter();
+  const from = process.env.SMTP_FROM ?? "Donut Studio <noreply@donutstudio.ro>";
+  const html = emailShell(body);
+
+  await Promise.all([
+    transporter.sendMail({
+      from,
+      to: data.email,
+      subject: `Comandă confirmată ${data.orderNumber} — Donut Studio`,
+      html,
+    }),
+    transporter.sendMail({
+      from,
+      to: "ene.cdr@gmail.com",
+      subject: `Comandă nouă ${data.orderNumber} — Donut Studio`,
+      html,
+    }),
+  ]);
 }
 
 export async function sendInvoiceEmail(invoiceData: InvoiceData, pdfBuffer: Buffer) {
@@ -215,6 +263,7 @@ export async function sendInvoiceEmail(invoiceData: InvoiceData, pdfBuffer: Buff
       <p style="margin:0 0 4px;color:rgba(240,221,200,0.45);font-size:11px;text-transform:uppercase;letter-spacing:0.1em;">Factură</p>
       <p style="margin:0;color:#BC8157;font-size:18px;font-weight:800;">${invoiceData.facturaNumber}</p>
     </div>
+    ${invoiceData.cui ? `<p style="margin:0 0 8px;color:rgba(240,221,200,0.55);font-size:13px;">CUI Companie: <strong style="color:#D4956A;">${invoiceData.cui}</strong></p>` : ""}
     <p style="margin:0;color:rgba(240,221,200,0.55);font-size:13px;">
       Total: <strong style="color:#D4956A;">${invoiceData.total.toFixed(2)} lei</strong>
     </p>

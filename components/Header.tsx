@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ShoppingBag, Menu, X, User, LogOut, Sun, Moon, ShieldCheck } from "lucide-react";
 import { useCartStore, useAuthStore, useThemeStore } from "@/lib/store";
 import { motion, AnimatePresence } from "framer-motion";
+import AnnouncementBar from "@/components/AnnouncementBar";
 
 const navLinks = [
   { href: "/", label: "Acasă" },
@@ -32,14 +33,22 @@ export default function Header() {
 
   useEffect(() => { setMounted(true); }, []);
 
+  const [barVisible, setBarVisible] = useState(true);
+
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 30);
-    window.addEventListener("scroll", handleScroll);
+    const handleScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 30);
+      setBarVisible(y < 10);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500`}>
+      <AnnouncementBar visible={barVisible} />
+    <div className={`transition-all duration-500 ${
       scrolled
         ? "backdrop-blur-xl shadow-xl border-b border-[#BC8157]/10"
         : "bg-transparent"
@@ -246,6 +255,7 @@ export default function Header() {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
     </header>
   );
 }

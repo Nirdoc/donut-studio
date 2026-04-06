@@ -50,91 +50,106 @@ const emptyAddress = (): AddressState => ({
 
 const SECTORS = ["Sector 1", "Sector 2", "Sector 3", "Sector 4", "Sector 5", "Sector 6"];
 
+const ILFOV_LOCALITIES = [
+  "Afumați", "Balotești", "Berceni", "Bragadiru", "Brănești", "Buftea",
+  "Cernica", "Chitila", "Ciolpani", "Clinceni", "Corbeanca", "Cornetu",
+  "Dărăști-Ilfov", "Domneşti", "Dragomireşti-Vale", "Găneasa", "Glina",
+  "Grădiştea", "Gruiu", "Jilava", "Măgurele", "Moara Vlăsiei", "Nuci",
+  "Otopeni", "Pantelimon", "Petrăchioaia", "Popeşti-Leordeni", "Snagov",
+  "Ştefăneştii de Jos", "Tunari", "Vidra", "Voluntari",
+];
+
 // ── Reusable address block ───────────────────────────────────────────────────
+function FieldError({ msg }: { msg?: string }) {
+  if (!msg) return null;
+  return <p className="text-xs text-red-400 mt-1">{msg}</p>;
+}
+
 function AddressFields({
   value,
   onChange,
   required = true,
+  errors = {},
 }: {
   value: AddressState;
   onChange: (next: AddressState) => void;
   required?: boolean;
+  errors?: Record<string, string>;
 }) {
   const set = (field: keyof AddressState, val: string) =>
     onChange({ ...value, [field]: val });
 
-  const inp = "w-full px-4 py-3 rounded-xl text-sm input-dark bg-transparent text-[var(--text)]";
-  const sel = `${inp} appearance-none`;
+  const base = "w-full px-4 py-3 rounded-xl text-sm input-dark bg-transparent text-[var(--text)] transition-all";
+  const inp = (key: string) => `${base} ${errors[key] ? "ring-1 ring-red-400/70" : ""}`;
+  const sel = (key: string) => `${inp(key)} appearance-none`;
   const lbl = "block text-sm font-medium mb-1.5";
 
-  const isBucuresti = value.city === "București";
+  // Derive the "zone" from state: "București" | "Ilfov" | ""
+  const zone = value.city === "București" ? "București" : value.judet === "Ilfov" ? "Ilfov" : "";
 
-  const handleCityChange = (city: string) => {
-    // When switching to București, clear judet so user picks a sector
-    // When switching away, auto-set judet to Ilfov and clear city text
-    if (city === "București") {
-      onChange({ ...value, city, judet: "" });
-    } else {
+  const handleZoneChange = (z: string) => {
+    if (z === "București") {
+      onChange({ ...value, city: "București", judet: "" });
+    } else if (z === "Ilfov") {
       onChange({ ...value, city: "", judet: "Ilfov" });
+    } else {
+      onChange({ ...value, city: "", judet: "" });
     }
   };
 
   return (
     <div className="space-y-4">
-      {/* Oraș */}
-      <div>
-        <label className={lbl} style={{ color: "var(--label-text)" }}>
-          Oraș {required && <span className="text-red-400">*</span>}
-        </label>
-        <select
-          required={required}
-          value={value.city}
-          onChange={(e) => handleCityChange(e.target.value)}
-          className={sel}
-        >
-          <option value="">— Selectează orașul —</option>
-          <option value="București">București</option>
-        </select>
-      </div>
-
-      {/* Județ / Sector — depends on city */}
+      {/* Oraș / Județ — single primary selector */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={lbl} style={{ color: "var(--label-text)" }}>
-            {isBucuresti ? "Sector" : "Județ"} {required && <span className="text-red-400">*</span>}
+            Oraș / Județ {required && <span className="text-red-400">*</span>}
           </label>
-          {isBucuresti ? (
+          <select
+            value={zone}
+            onChange={(e) => handleZoneChange(e.target.value)}
+            className={sel("zone")}
+          >
+            <option value="">— Selectează —</option>
+            <option value="București">București</option>
+            <option value="Ilfov">Ilfov</option>
+          </select>
+          <FieldError msg={errors.zone} />
+        </div>
+
+        {/* Sector — only for București */}
+        {zone === "București" && (
+          <div>
+            <label className={lbl} style={{ color: "var(--label-text)" }}>
+              Sector {required && <span className="text-red-400">*</span>}
+            </label>
             <select
-              required={required}
               value={value.judet}
               onChange={(e) => set("judet", e.target.value)}
-              className={sel}
+              className={sel("judet")}
             >
               <option value="">— Selectează sectorul —</option>
               {SECTORS.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
-          ) : (
-            <input
-              readOnly
-              value="Ilfov"
-              className={`${inp} opacity-60 cursor-default`}
-            />
-          )}
-        </div>
+            <FieldError msg={errors.judet} />
+          </div>
+        )}
 
-        {/* Localitate — only shown for Ilfov */}
-        {!isBucuresti && (
+        {/* Localitate — only for Ilfov */}
+        {zone === "Ilfov" && (
           <div>
             <label className={lbl} style={{ color: "var(--label-text)" }}>
               Localitate {required && <span className="text-red-400">*</span>}
             </label>
-            <input
-              required={required}
-              value={value.city === "București" ? "" : ""}
-              onChange={(e) => onChange({ ...value, city: e.target.value, judet: "Ilfov" })}
-              placeholder="Voluntari, Otopeni..."
-              className={inp}
-            />
+            <select
+              value={value.city}
+              onChange={(e) => set("city", e.target.value)}
+              className={sel("city")}
+            >
+              <option value="">— Selectează localitatea —</option>
+              {ILFOV_LOCALITIES.map((l) => <option key={l} value={l}>{l}</option>)}
+            </select>
+            <FieldError msg={errors.city} />
           </div>
         )}
       </div>
@@ -146,24 +161,24 @@ function AddressFields({
             Stradă {required && <span className="text-red-400">*</span>}
           </label>
           <input
-            required={required}
             value={value.street}
             onChange={(e) => set("street", e.target.value)}
             placeholder="Str. Exemplu"
-            className={inp}
+            className={inp("street")}
           />
+          <FieldError msg={errors.street} />
         </div>
         <div className="col-span-2 sm:col-span-1">
           <label className={lbl} style={{ color: "var(--label-text)" }}>
             Număr {required && <span className="text-red-400">*</span>}
           </label>
           <input
-            required={required}
             value={value.number}
             onChange={(e) => set("number", e.target.value)}
             placeholder="10"
-            className={inp}
+            className={inp("number")}
           />
+          <FieldError msg={errors.number} />
         </div>
       </div>
 
@@ -210,24 +225,24 @@ function AddressFields({
                   Bloc {required && <span className="text-red-400">*</span>}
                 </label>
                 <input
-                  required={required && value.type === "bloc"}
                   value={value.bloc}
                   onChange={(e) => set("bloc", e.target.value)}
                   placeholder="A12"
-                  className={inp}
+                  className={inp("bloc")}
                 />
+                <FieldError msg={errors.bloc} />
               </div>
               <div>
                 <label className={lbl} style={{ color: "var(--label-text)" }}>
-                  Scară
-                  <span className="text-[var(--text-35)] font-normal text-xs ml-1">(opt.)</span>
+                  Scară {required && <span className="text-red-400">*</span>}
                 </label>
                 <input
                   value={value.scara}
                   onChange={(e) => set("scara", e.target.value)}
                   placeholder="1"
-                  className={inp}
+                  className={inp("scara")}
                 />
+                <FieldError msg={errors.scara} />
               </div>
               <div>
                 <label className={lbl} style={{ color: "var(--label-text)" }}>
@@ -238,19 +253,19 @@ function AddressFields({
                   value={value.etaj}
                   onChange={(e) => set("etaj", e.target.value)}
                   placeholder="3"
-                  className={inp}
+                  className={inp("etaj")}
                 />
               </div>
               <div>
                 <label className={lbl} style={{ color: "var(--label-text)" }}>
-                  Apartament {required && <span className="text-red-400">*</span>}
+                  Apartament
+                  <span className="text-[var(--text-35)] font-normal text-xs ml-1">(opt.)</span>
                 </label>
                 <input
-                  required={required && value.type === "bloc"}
                   value={value.apartament}
                   onChange={(e) => set("apartament", e.target.value)}
                   placeholder="42"
-                  className={inp}
+                  className={inp("apartament")}
                 />
               </div>
             </div>
@@ -286,9 +301,43 @@ export default function CheckoutClient() {
   const [differentDelivery, setDifferentDelivery] = useState(false);
   const [deliveryAddr, setDeliveryAddr] = useState<AddressState>(emptyAddress());
 
+  // Validation
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const clearError = (key: string) => setErrors((p) => { const n = { ...p }; delete n[key]; return n; });
+
+  const PHONE_RE = /^\+?[\d\s\-\(\)\.]{7,20}$/;
+
+  const validateStep2 = (): boolean => {
+    const errs: Record<string, string> = {};
+
+    if (!contact.firstName.trim())  errs.firstName = "Câmp obligatoriu";
+    if (!contact.lastName.trim())   errs.lastName  = "Câmp obligatoriu";
+    if (!contact.email.trim())      errs.email     = "Câmp obligatoriu";
+    if (!contact.phone.trim())      errs.phone     = "Câmp obligatoriu";
+    else if (!PHONE_RE.test(contact.phone.trim())) errs.phone = "Număr de telefon invalid";
+
+    const validateAddr = (addr: AddressState, prefix: string) => {
+      const zone = addr.city === "București" ? "București" : addr.judet === "Ilfov" ? "Ilfov" : "";
+      if (!zone)              errs[`${prefix}zone`]   = "Câmp obligatoriu";
+      if (zone === "București" && !addr.judet) errs[`${prefix}judet`] = "Câmp obligatoriu";
+      if (zone === "Ilfov"    && !addr.city)  errs[`${prefix}city`]  = "Câmp obligatoriu";
+      if (!addr.street.trim()) errs[`${prefix}street`] = "Câmp obligatoriu";
+      if (!addr.number.trim()) errs[`${prefix}number`] = "Câmp obligatoriu";
+      if (addr.type === "bloc") {
+        if (!addr.bloc.trim())  errs[`${prefix}bloc`]  = "Câmp obligatoriu";
+        if (!addr.scara.trim()) errs[`${prefix}scara`] = "Câmp obligatoriu";
+      }
+    };
+
+    validateAddr(billingAddr, "b_");
+    if (differentDelivery) validateAddr(deliveryAddr, "d_");
+
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   // Step 3
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
-  const [card, setCard] = useState({ number: "", name: "", expiry: "", cvv: "" });
 
   // Derived
   const totalQty = items.reduce((s, i) => s + i.quantity, 0);
@@ -323,32 +372,66 @@ export default function CheckoutClient() {
     setDeliveryTime("");
   };
 
+  const getToken = () => {
+    if (typeof window === "undefined") return "";
+    try { return JSON.parse(localStorage.getItem("donut-auth") ?? "{}").state?.token ?? ""; } catch { return ""; }
+  };
+
+  const orderPayload = () => ({
+    deliveryDate,
+    deliveryTime,
+    contact,
+    billingAddr,
+    differentDelivery,
+    deliveryAddr: differentDelivery ? deliveryAddr : null,
+    paymentMethod,
+    deliveryFee: fee,
+    subtotal: totalPrice(),
+    total: grandTotal,
+    items: items.map((i) => ({ id: i.product.id, name: i.product.name, price: i.product.price, quantity: i.quantity })),
+  });
+
   const handlePlaceOrder = async () => {
     setLoading(true);
     try {
-      const token = typeof window !== "undefined"
-        ? (() => { try { return JSON.parse(localStorage.getItem("donut-auth") ?? "{}").state?.token ?? ""; } catch { return ""; } })()
-        : "";
+      const token = getToken();
 
+      if (paymentMethod === "card") {
+        // Colectăm date browser pentru 3DS2
+        const browserData = {
+          userAgent:    navigator.userAgent,
+          tz:           Intl.DateTimeFormat().resolvedOptions().timeZone,
+          colorDepth:   String(screen.colorDepth),
+          javaEnabled:  "false",
+          language:     navigator.language,
+          screenHeight: String(screen.height),
+          screenWidth:  String(screen.width),
+        };
+
+        const res = await fetch("/api/payment/netopia/start", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ ...orderPayload(), browserData }),
+        });
+
+        if (!res.ok) throw new Error("Eroare la inițierea plății.");
+        const { paymentUrl } = await res.json();
+        clearCart();
+        window.location.href = paymentUrl;
+        return;
+      }
+
+      // Cash / pickup
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({
-          deliveryDate,
-          deliveryTime,
-          contact,
-          billingAddr,
-          differentDelivery,
-          deliveryAddr: differentDelivery ? deliveryAddr : null,
-          paymentMethod,
-          deliveryFee: fee,
-          subtotal: totalPrice(),
-          total: grandTotal,
-          items: items.map((i) => ({ id: i.product.id, name: i.product.name, price: i.product.price, quantity: i.quantity })),
-        }),
+        body: JSON.stringify(orderPayload()),
       });
 
       if (!res.ok) throw new Error("Eroare server.");
@@ -361,7 +444,7 @@ export default function CheckoutClient() {
 
   if (items.length === 0 && !loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-6 pt-20">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6 pt-28">
         <ShoppingBag size={48} className="text-[#BC8157]/40" />
         <h2 className="font-display text-2xl text-[var(--text)]">Coșul e gol</h2>
         <Link href="/menu" className="bg-[#BC8157] text-white px-6 py-3 rounded-full font-medium hover:bg-[#9a6540] transition-colors">
@@ -371,9 +454,29 @@ export default function CheckoutClient() {
     );
   }
 
+  if (!user && !loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6 pt-28 px-4 text-center">
+        <Lock size={48} className="text-[#BC8157]/40" />
+        <h2 className="font-display text-2xl text-[var(--text)]">Trebuie să fii autentificat</h2>
+        <p className="text-sm max-w-xs" style={{ color: "var(--text-60)" }}>
+          Conectează-te la contul tău pentru a putea finaliza comanda.
+        </p>
+        <div className="flex gap-3">
+          <Link href="/login" className="bg-[#BC8157] text-white px-6 py-3 rounded-full font-medium hover:bg-[#9a6540] transition-colors">
+            Autentifică-te
+          </Link>
+          <Link href="/register" className="border border-[#BC8157] text-[#BC8157] px-6 py-3 rounded-full font-medium hover:bg-[#BC8157]/8 transition-colors">
+            Creează cont
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   if (totalQty < 16 && !loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-6 pt-20 px-4 text-center">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6 pt-28 px-4 text-center">
         <div className="text-5xl">🍩</div>
         <h2 className="font-display text-2xl text-[var(--text)]">Comandă minimă: 16 donuts</h2>
         <p className="text-sm max-w-xs" style={{ color: "var(--text-60)" }}>
@@ -389,7 +492,7 @@ export default function CheckoutClient() {
   const stepLabels = ["Date livrare", "Date facturare", "Plată"];
 
   return (
-    <div className="section-base min-h-screen pt-24 pb-16">
+    <div className="section-base min-h-screen pt-28 pb-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Header */}
@@ -517,7 +620,7 @@ export default function CheckoutClient() {
                     </div>
                   </div>
 
-                  <form onSubmit={(e) => { e.preventDefault(); setStep(3); }} className="space-y-5">
+                  <form noValidate onSubmit={(e) => { e.preventDefault(); if (validateStep2()) setStep(3); }} className="space-y-5">
 
                     {/* ── Contact ── */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -529,12 +632,13 @@ export default function CheckoutClient() {
                           <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--label-text)" }}>
                             {f.label} <span className="text-red-400">*</span>
                           </label>
-                          <input required
+                          <input
                             value={contact[f.key as keyof typeof contact]}
-                            onChange={(e) => setContact((p) => ({ ...p, [f.key]: e.target.value }))}
+                            onChange={(e) => { setContact((p) => ({ ...p, [f.key]: e.target.value })); clearError(f.key); }}
                             placeholder={f.placeholder}
-                            className="w-full px-4 py-3 rounded-xl text-sm input-dark bg-transparent text-[var(--text)]"
+                            className={`w-full px-4 py-3 rounded-xl text-sm input-dark bg-transparent text-[var(--text)] transition-all ${errors[f.key] ? "ring-1 ring-red-400/70" : ""}`}
                           />
+                          <FieldError msg={errors[f.key]} />
                         </div>
                       ))}
                     </div>
@@ -544,23 +648,25 @@ export default function CheckoutClient() {
                         <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--label-text)" }}>
                           Email <span className="text-red-400">*</span>
                         </label>
-                        <input required type="email"
+                        <input type="email"
                           value={contact.email}
-                          onChange={(e) => setContact((p) => ({ ...p, email: e.target.value }))}
+                          onChange={(e) => { setContact((p) => ({ ...p, email: e.target.value })); clearError("email"); }}
                           placeholder="email@exemplu.ro"
-                          className="w-full px-4 py-3 rounded-xl text-sm input-dark bg-transparent text-[var(--text)]"
+                          className={`w-full px-4 py-3 rounded-xl text-sm input-dark bg-transparent text-[var(--text)] transition-all ${errors.email ? "ring-1 ring-red-400/70" : ""}`}
                         />
+                        <FieldError msg={errors.email} />
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--label-text)" }}>
                           Telefon <span className="text-red-400">*</span>
                         </label>
-                        <input required type="tel"
+                        <input type="tel"
                           value={contact.phone}
-                          onChange={(e) => setContact((p) => ({ ...p, phone: e.target.value }))}
-                          placeholder="07XX XXX XXX"
-                          className="w-full px-4 py-3 rounded-xl text-sm input-dark bg-transparent text-[var(--text)]"
+                          onChange={(e) => { setContact((p) => ({ ...p, phone: e.target.value })); clearError("phone"); }}
+                          placeholder="+40 7XX XXX XXX"
+                          className={`w-full px-4 py-3 rounded-xl text-sm input-dark bg-transparent text-[var(--text)] transition-all ${errors.phone ? "ring-1 ring-red-400/70" : ""}`}
                         />
+                        <FieldError msg={errors.phone} />
                       </div>
                     </div>
 
@@ -583,7 +689,7 @@ export default function CheckoutClient() {
                       <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "var(--text-40)" }}>
                         Adresă facturare
                       </p>
-                      <AddressFields value={billingAddr} onChange={setBillingAddr} />
+                      <AddressFields value={billingAddr} onChange={(v) => { setBillingAddr(v); }} errors={Object.fromEntries(Object.entries(errors).filter(([k]) => k.startsWith("b_")).map(([k, v]) => [k.slice(2), v]))} />
                     </div>
 
                     {/* ── Checkbox altă adresă livrare ── */}
@@ -613,7 +719,7 @@ export default function CheckoutClient() {
                             <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "var(--text-40)" }}>
                               Adresă livrare
                             </p>
-                            <AddressFields value={deliveryAddr} onChange={setDeliveryAddr} required={differentDelivery} />
+                            <AddressFields value={deliveryAddr} onChange={setDeliveryAddr} required={differentDelivery} errors={Object.fromEntries(Object.entries(errors).filter(([k]) => k.startsWith("d_")).map(([k, v]) => [k.slice(2), v]))} />
                           </div>
                         </motion.div>
                       )}
@@ -692,58 +798,19 @@ export default function CheckoutClient() {
                       })}
                     </div>
 
-                    {/* Card fields */}
+                    {/* Netopia info */}
                     <AnimatePresence>
                       {paymentMethod === "card" && (
                         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
                           className="overflow-hidden">
-                          <div className="border-t border-[#BC8157]/10 pt-5 space-y-4">
-                            <div>
-                              <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--label-text)" }}>
-                                Număr card <span className="text-red-400">*</span>
-                              </label>
-                              <input value={card.number}
-                                onChange={(e) => {
-                                  const v = e.target.value.replace(/\D/g, "").slice(0, 16);
-                                  setCard((p) => ({ ...p, number: v.replace(/(.{4})/g, "$1 ").trim() }));
-                                }}
-                                placeholder="1234 5678 9012 3456"
-                                className="w-full px-4 py-3 rounded-xl text-sm input-dark bg-transparent text-[var(--text)] font-mono"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--label-text)" }}>
-                                Nume pe card <span className="text-red-400">*</span>
-                              </label>
-                              <input value={card.name}
-                                onChange={(e) => setCard((p) => ({ ...p, name: e.target.value }))}
-                                placeholder="ION POPESCU"
-                                className="w-full px-4 py-3 rounded-xl text-sm input-dark bg-transparent text-[var(--text)] uppercase"
-                              />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
+                          <div className="border-t border-[#BC8157]/10 pt-4">
+                            <div className="flex items-start gap-3 p-4 rounded-2xl bg-[#BC8157]/6 border border-[#BC8157]/15">
+                              <Lock size={15} className="text-[#BC8157] mt-0.5 flex-shrink-0" />
                               <div>
-                                <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--label-text)" }}>
-                                  Expiră <span className="text-red-400">*</span>
-                                </label>
-                                <input value={card.expiry}
-                                  onChange={(e) => {
-                                    const v = e.target.value.replace(/\D/g, "").slice(0, 4);
-                                    setCard((p) => ({ ...p, expiry: v.length > 2 ? `${v.slice(0, 2)}/${v.slice(2)}` : v }));
-                                  }}
-                                  placeholder="MM/YY"
-                                  className="w-full px-4 py-3 rounded-xl text-sm input-dark bg-transparent text-[var(--text)] font-mono"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--label-text)" }}>
-                                  CVV <span className="text-red-400">*</span>
-                                </label>
-                                <input value={card.cvv}
-                                  onChange={(e) => setCard((p) => ({ ...p, cvv: e.target.value.replace(/\D/g, "").slice(0, 3) }))}
-                                  placeholder="123"
-                                  className="w-full px-4 py-3 rounded-xl text-sm input-dark bg-transparent text-[var(--text)] font-mono"
-                                />
+                                <p className="text-sm font-medium text-[var(--text)]">Plată securizată prin Netopia</p>
+                                <p className="text-xs mt-0.5" style={{ color: "var(--text-50)" }}>
+                                  Vei fi redirecționat pe pagina securizată Netopia pentru a introduce datele cardului. Datele tale sunt protejate prin criptare SSL și autentificare 3DS.
+                                </p>
                               </div>
                             </div>
                           </div>
@@ -757,12 +824,12 @@ export default function CheckoutClient() {
                         ← Înapoi
                       </button>
                       <button type="button" onClick={handlePlaceOrder}
-                        disabled={loading || (paymentMethod === "card" && (!card.number || !card.name || !card.expiry || !card.cvv))}
+                        disabled={loading}
                         className="flex-1 bg-[#BC8157] hover:bg-[#9a6540] disabled:opacity-50 disabled:cursor-not-allowed text-white py-4 rounded-2xl font-semibold transition-colors">
                         {loading
                           ? "Se procesează..."
                           : paymentMethod === "card"
-                            ? `Plătește · ${grandTotal.toFixed(2)} lei`
+                            ? `Plătește cu cardul · ${grandTotal.toFixed(2)} lei →`
                             : `Finalizează comanda · ${grandTotal.toFixed(2)} lei`}
                       </button>
                     </div>

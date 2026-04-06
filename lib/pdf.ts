@@ -3,20 +3,32 @@ import path from "path";
 
 const FONT_REGULAR = path.join(process.cwd(), "lib/fonts/Arial-Regular.ttf");
 const FONT_BOLD    = path.join(process.cwd(), "lib/fonts/Arial-Bold.ttf");
+const LOGO_PNG     = path.join(process.cwd(), "lib/fonts/logo.png");
 
-// Donut Studio company details
 const COMPANY = {
-  name:    "DONUT STUDIO S.R.L.",
-  cui:     "RO 00000000",
-  regCom:  "J40/0000/2024",
-  address: "Piata Victoriei, Nr. 1",
-  city:    "Bucuresti, Sector 1",
-  county:  "ILFOV",
-  bank:    "Banca Transilvania",
-  iban:    "RO00BTRLEURCRT0000000000",
-  phone:   "0745 018 888",
+  name:    "AMERICAN BITE S.R.L.",
+  cui:     "RO 36991079",
+  regCom:  "J23/7328/2023",
+  capital: "200 RON",
+  address: "Str. Crinului, nr. 25L",
+  sat:     "Sat Rosu, Localitate Chiajna",
+  judet:   "ILFOV",
+  tara:    "ROMANIA",
+  bank:    "BANCA TRANSILVANIA",
+  iban:    "RO86BTRLRONCRT0383442601",
+  phone:   "0745018888",
   email:   "contact@donutstudio.ro",
+  web:     "http://www.donutstudio.ro",
 };
+
+const TVA_RATE = 0.21;
+const BRAND    = "#BC8157";
+const BLACK    = "#1A1A1A";
+const DGRAY    = "#444444";
+const GRAY     = "#888888";
+const LGRAY    = "#BBBBBB";
+const BG_ALT   = "#F9F6F3";
+const BG_BOX   = "#FBF8F5";
 
 export interface InvoiceData {
   facturaNumber: string;
@@ -53,225 +65,221 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
     doc.on("end",  () => resolve(Buffer.concat(chunks)));
     doc.on("error", reject);
 
-    // ── Register fonts ────────────────────────────────────
     doc.registerFont("Regular", FONT_REGULAR);
     doc.registerFont("Bold",    FONT_BOLD);
 
     const PAGE_W = 595.28;
-    const MARGIN = 40;
-    const COL_W  = (PAGE_W - MARGIN * 2) / 2 - 10;
+    const PAGE_H = 841.89;
+    const M      = 40;          // margin
+    const BODY_W = PAGE_W - M * 2;
 
-    const BRAND  = "#BC8157";
-    const DARK   = "#1a0804";
-    const GRAY   = "#666666";
-    const LGRAY  = "#999999";
-    const WHITE  = "#FFFFFF";
-
-    // ── Header bar ────────────────────────────────────────
-    doc.rect(0, 0, PAGE_W, 56).fill(BRAND);
-
-    doc.font("Bold").fontSize(18).fill(WHITE)
-      .text("DONUT STUDIO", MARGIN, 14, { continued: true })
-      .font("Regular").fontSize(10).fill("rgba(255,255,255,0.75)")
-      .text("  |  Artizan Pastry", { baseline: "middle" });
-
-    doc.font("Bold").fontSize(13).fill(WHITE)
-      .text("FACTURA", 0, 18, { align: "right", width: PAGE_W - MARGIN });
-
-    doc.font("Regular").fontSize(9).fill("rgba(255,255,255,0.80)")
-      .text(data.facturaNumber, 0, 33, { align: "right", width: PAGE_W - MARGIN });
-
-    // ── Date row ──────────────────────────────────────────
-    const dateY = 68;
     const fmtDate = (d: Date) =>
       d.toLocaleDateString("ro-RO", { day: "2-digit", month: "2-digit", year: "numeric" });
 
-    doc.rect(MARGIN, dateY, PAGE_W - MARGIN * 2, 22).fill("#f9f1ea");
+    const scadenta = new Date(data.createdAt);
+    scadenta.setDate(scadenta.getDate() + 7);
 
+    // ── White page ───────────────────────────────────────────────────────────
+    doc.rect(0, 0, PAGE_W, PAGE_H).fill("#FFFFFF");
+
+    // ── Top accent bar ───────────────────────────────────────────────────────
+    doc.rect(0, 0, PAGE_W, 4).fill(BRAND);
+
+    // ── HEADER ───────────────────────────────────────────────────────────────
+    const HDR_Y = 18;
+
+    // Logo
+    try { doc.image(LOGO_PNG, M, HDR_Y, { width: 72, height: 72 }); } catch { /* skip */ }
+
+    // Company name beside logo
+    doc.font("Bold").fontSize(13).fill(BLACK)
+      .text(COMPANY.name, M + 82, HDR_Y + 10, { width: 200 });
     doc.font("Regular").fontSize(8).fill(GRAY)
-      .text(`Data emiterii: `, MARGIN + 8, dateY + 7, { continued: true })
-      .font("Bold").text(fmtDate(data.createdAt), { continued: true })
-      .font("Regular").text(`     Comanda: `, { continued: true })
-      .font("Bold").text(data.orderNumber);
+      .text(`CUI: ${COMPANY.cui}  ·  Reg. Com.: ${COMPANY.regCom}`, M + 82, HDR_Y + 28, { width: 230 });
 
-    // ── Two-column block: Furnizor | Client ───────────────
-    const blockY = dateY + 32;
-    const LEFT_X  = MARGIN;
-    const RIGHT_X = MARGIN + COL_W + 20;
+    // Invoice title block — right side
+    const TITLE_X = PAGE_W - M - 180;
+    doc.rect(TITLE_X - 12, HDR_Y - 4, 196, 82).fill(BG_BOX);
+    doc.rect(TITLE_X - 12, HDR_Y - 4, 4, 82).fill(BRAND);
 
-    // Column headers
-    doc.rect(LEFT_X, blockY, COL_W, 18).fill(DARK);
-    doc.rect(RIGHT_X, blockY, COL_W, 18).fill(DARK);
+    doc.font("Bold").fontSize(20).fill(BRAND)
+      .text("FACTURĂ", TITLE_X, HDR_Y + 4, { width: 176 });
+    doc.font("Bold").fontSize(11).fill(BLACK)
+      .text(data.facturaNumber, TITLE_X, HDR_Y + 28, { width: 176 });
+    doc.font("Regular").fontSize(8).fill(DGRAY)
+      .text(`Data emitere:   ${fmtDate(data.createdAt)}`, TITLE_X, HDR_Y + 44, { width: 176 })
+      .text(`Data scadenta: ${fmtDate(scadenta)}`,        TITLE_X, HDR_Y + 56, { width: 176 });
 
-    doc.font("Bold").fontSize(8).fill(WHITE)
-      .text("FURNIZOR", LEFT_X + 8, blockY + 5)
-      .text("CLIENT",   RIGHT_X + 8, blockY + 5);
+    // ── Divider ──────────────────────────────────────────────────────────────
+    const DIV1_Y = HDR_Y + 82 + 10;
+    doc.moveTo(M, DIV1_Y).lineTo(PAGE_W - M, DIV1_Y)
+      .strokeColor(LGRAY).lineWidth(0.5).stroke();
 
-    // Column content
-    const infoY = blockY + 24;
-    const lineH = 13;
+    // ── TWO-COLUMN INFO ───────────────────────────────────────────────────────
+    const COL_W  = BODY_W / 2 - 8;
+    const LEFT_X  = M;
+    const RIGHT_X = M + COL_W + 16;
+    const INFO_Y  = DIV1_Y + 12;
 
-    function labelVal(x: number, y: number, label: string, value: string): number {
-      doc.font("Regular").fontSize(8).fill(LGRAY)
-        .text(label, x, y, { width: 55, continued: false });
-      doc.font("Regular").fontSize(8).fill(DARK)
-        .text(value, x + 58, y, { width: COL_W - 66 });
-      return y + lineH;
-    }
-
-    // Furnizor
-    let ly = infoY;
-    doc.font("Bold").fontSize(9).fill(DARK).text(COMPANY.name, LEFT_X, ly); ly += lineH + 2;
-    ly = labelVal(LEFT_X, ly, "CUI:",      COMPANY.cui);
-    ly = labelVal(LEFT_X, ly, "Reg. Com.:", COMPANY.regCom);
-    ly = labelVal(LEFT_X, ly, "Adresa:",   COMPANY.address);
-    ly = labelVal(LEFT_X, ly, "Localit.:", COMPANY.city);
-    ly = labelVal(LEFT_X, ly, "Judet:",    COMPANY.county);
-    ly = labelVal(LEFT_X, ly, "IBAN:",     COMPANY.iban);
-    ly = labelVal(LEFT_X, ly, "Banca:",    COMPANY.bank);
-    ly = labelVal(LEFT_X, ly, "Tel:",      COMPANY.phone);
-    labelVal(LEFT_X, ly, "Email:",   COMPANY.email);
-
-    // Client
-    const clientName = `${data.firstName} ${data.lastName}`.toUpperCase();
-    const clientAddr1 = `${data.street}, Nr. ${data.number}` +
-      (data.dwellingType === "bloc" && data.bloc
-        ? `, Bl. ${data.bloc}${data.apartament ? `, Ap. ${data.apartament}` : ""}`
-        : "");
-
-    let ry = infoY;
-    doc.font("Bold").fontSize(9).fill(DARK).text(clientName, RIGHT_X, ry); ry += lineH + 2;
-    if (data.cui) { ry = labelVal(RIGHT_X, ry, "CUI:", data.cui); }
-    ry = labelVal(RIGHT_X, ry, "Judet:",   data.judet);
-    ry = labelVal(RIGHT_X, ry, "Localit.:", data.city);
-    ry = labelVal(RIGHT_X, ry, "Adresa:",  clientAddr1);
-    ry = labelVal(RIGHT_X, ry, "Tel:",     data.phone);
-    labelVal(RIGHT_X, ry, "Email:",  data.email);
-
-    // Divider after columns
-    const tableY = Math.max(ly, ry) + 24;
-
-    // ── Products table ────────────────────────────────────
-    // Column positions
-    const C_NR    = MARGIN;
-    const C_NAME  = MARGIN + 24;
-    const C_UM    = PAGE_W - MARGIN - 200;
-    const C_QTY   = PAGE_W - MARGIN - 160;
-    const C_PRICE = PAGE_W - MARGIN - 110;
-    const C_TVA   = PAGE_W - MARGIN - 56;
-    const C_TOTAL = PAGE_W - MARGIN - 4;
-
-    // Table header
-    doc.rect(MARGIN, tableY, PAGE_W - MARGIN * 2, 18).fill(DARK);
-    doc.font("Bold").fontSize(7.5).fill(WHITE);
-
-    const thY = tableY + 5;
-    doc.text("Nr.",        C_NR,    thY, { width: 20,  align: "center" });
-    doc.text("Denumire",   C_NAME,  thY, { width: 130 });
-    doc.text("UM",         C_UM,    thY, { width: 36,  align: "center" });
-    doc.text("Cant.",      C_QTY,   thY, { width: 44,  align: "right" });
-    doc.text("Pret (lei)", C_PRICE, thY, { width: 50,  align: "right" });
-    doc.text("TVA",        C_TVA,   thY, { width: 50,  align: "right" });
-    doc.text("Total (lei)", C_TOTAL, thY, { width: 60,  align: "right" });
-
-    // Table rows
-    const TVA_RATE = 0.19;
-    let rowY = tableY + 18;
-
-    data.items.forEach((item, i) => {
-      const bg = i % 2 === 0 ? "#FFFFFF" : "#fdf7f2";
-      doc.rect(MARGIN, rowY, PAGE_W - MARGIN * 2, 16).fill(bg);
-
-      const priceNoTva = item.price / (1 + TVA_RATE);
-      const tvaAmt     = item.price - priceNoTva;
-      const lineTotal  = item.price * item.quantity;
-
-      doc.font("Regular").fontSize(8).fill(DARK);
-      doc.text(String(i + 1),               C_NR,    rowY + 4, { width: 20,  align: "center" });
-      doc.text(item.name,                    C_NAME,  rowY + 4, { width: 130 });
-      doc.text("buc",                        C_UM,    rowY + 4, { width: 36,  align: "center" });
-      doc.text(String(item.quantity),        C_QTY,   rowY + 4, { width: 44,  align: "right" });
-      doc.text(priceNoTva.toFixed(2),        C_PRICE, rowY + 4, { width: 50,  align: "right" });
-      doc.text(`19% / ${(tvaAmt * item.quantity).toFixed(2)}`, C_TVA, rowY + 4, { width: 50, align: "right" });
-      doc.text(lineTotal.toFixed(2),         C_TOTAL, rowY + 4, { width: 60,  align: "right" });
-
-      rowY += 16;
-    });
-
-    // Delivery fee row (if any)
-    if (data.deliveryFee > 0) {
-      const bg = data.items.length % 2 === 0 ? "#FFFFFF" : "#fdf7f2";
-      doc.rect(MARGIN, rowY, PAGE_W - MARGIN * 2, 16).fill(bg);
-
-      const priceNoTva = data.deliveryFee / (1 + TVA_RATE);
-      const tvaAmt     = data.deliveryFee - priceNoTva;
-
-      doc.font("Regular").fontSize(8).fill(DARK);
-      doc.text(String(data.items.length + 1), C_NR,    rowY + 4, { width: 20,  align: "center" });
-      doc.text("Taxa de livrare",             C_NAME,  rowY + 4, { width: 130 });
-      doc.text("buc",                         C_UM,    rowY + 4, { width: 36,  align: "center" });
-      doc.text("1",                           C_QTY,   rowY + 4, { width: 44,  align: "right" });
-      doc.text(priceNoTva.toFixed(2),         C_PRICE, rowY + 4, { width: 50,  align: "right" });
-      doc.text(`19% / ${tvaAmt.toFixed(2)}`,  C_TVA,   rowY + 4, { width: 50,  align: "right" });
-      doc.text(data.deliveryFee.toFixed(2),   C_TOTAL, rowY + 4, { width: 60,  align: "right" });
-
-      rowY += 16;
-    }
-
-    // Table bottom border
-    doc.moveTo(MARGIN, rowY).lineTo(PAGE_W - MARGIN, rowY)
-      .strokeColor("#cccccc").lineWidth(0.5).stroke();
-
-    // ── Totals block ──────────────────────────────────────
-    const TOT_X = PAGE_W - MARGIN - 200;
-    const TOT_W = 200;
-    let totY = rowY + 10;
-
-    const tvaTotal = data.total - data.total / (1 + TVA_RATE);
-    const baseTotal = data.total - tvaTotal;
-
-    const totRow = (label: string, value: string, bold = false) => {
-      doc.font(bold ? "Bold" : "Regular").fontSize(9)
-        .fill(bold ? DARK : GRAY)
-        .text(label, TOT_X, totY, { width: 110 })
-        .text(value, TOT_X + 110, totY, { width: TOT_W - 110, align: "right" });
-      totY += 14;
+    // Helper — draws a key/value row, returns next Y
+    const kv = (x: number, y: number, key: string, val: string, w = COL_W): number => {
+      const kw = doc.font("Bold").fontSize(8).widthOfString(key + " ");
+      doc.font("Bold").fontSize(8).fill(BLACK).text(key, x, y, { continued: false });
+      doc.font("Regular").fontSize(8).fill(DGRAY).text(val, x + kw, y, { width: w - kw });
+      return y + 13;
+    };
+    const line = (x: number, y: number, txt: string, w = COL_W): number => {
+      doc.font("Regular").fontSize(8).fill(DGRAY).text(txt, x, y, { width: w });
+      return y + 13;
     };
 
-    totRow("Subtotal fara TVA:", `${baseTotal.toFixed(2)} lei`);
-    totRow("TVA (19%):",         `${tvaTotal.toFixed(2)} lei`);
+    // ── Furnizor box ─────────────────────────────────────────────────────────
+    doc.rect(LEFT_X, INFO_Y, COL_W, 14).fill(BLACK);
+    doc.font("Bold").fontSize(7.5).fill("#FFFFFF")
+      .text("FURNIZOR", LEFT_X + 8, INFO_Y + 3.5);
+
+    let ly = INFO_Y + 20;
+    doc.font("Bold").fontSize(11).fill(BLACK)
+      .text(COMPANY.name, LEFT_X, ly, { width: COL_W });
+    ly += 18;
+
+    ly = kv(LEFT_X, ly, "CUI:", COMPANY.cui);
+    ly = kv(LEFT_X, ly, "Reg. Com.:", COMPANY.regCom);
+    ly = kv(LEFT_X, ly, "Capital social:", COMPANY.capital);
+    ly = kv(LEFT_X, ly, "Adresa:", COMPANY.address);
+    ly = line(LEFT_X, ly, COMPANY.sat);
+    ly = kv(LEFT_X, ly, "Judet:", COMPANY.judet);
+    ly = kv(LEFT_X, ly, "Tara:", COMPANY.tara);
+    ly += 3;
+    ly = line(LEFT_X, ly, COMPANY.bank);
+    ly = line(LEFT_X, ly, COMPANY.iban);
+    ly += 3;
+    ly = kv(LEFT_X, ly, "Email:", COMPANY.email);
+    ly = kv(LEFT_X, ly, "Telefon:", COMPANY.phone);
+    kv(LEFT_X, ly, "Web:", COMPANY.web);
+
+    // ── Client box ───────────────────────────────────────────────────────────
+    doc.rect(RIGHT_X, INFO_Y, COL_W, 14).fill(BRAND);
+    doc.font("Bold").fontSize(7.5).fill("#FFFFFF")
+      .text("CLIENT", RIGHT_X + 8, INFO_Y + 3.5);
+
+    const clientName = `${data.firstName} ${data.lastName}`.toUpperCase();
+    const clientAddr = `${data.street}, Nr. ${data.number}` +
+      (data.dwellingType === "bloc" && data.bloc
+        ? `, Bl. ${data.bloc}${data.apartament ? `, Ap. ${data.apartament}` : ""}` : "");
+
+    let ry = INFO_Y + 20;
+    doc.font("Bold").fontSize(11).fill(BLACK)
+      .text(clientName, RIGHT_X, ry, { width: COL_W });
+    ry += 18;
+
+    if (data.cui) { ry = kv(RIGHT_X, ry, "CUI Comp.:", data.cui); }
+    ry = kv(RIGHT_X, ry, "Judet:", data.judet);
+    ry = kv(RIGHT_X, ry, "Localitate:", data.city);
+    ry = kv(RIGHT_X, ry, "Adresa:", clientAddr);
+    ry = kv(RIGHT_X, ry, "Telefon:", data.phone);
+    kv(RIGHT_X, ry, "Email:", data.email);
+
+    // ── PRODUCTS TABLE ────────────────────────────────────────────────────────
+    const TABLE_Y = Math.max(ly, ry) + 20;
+
+    // Column x positions — all within [M … M+BODY_W]
+    // Right edge = M + BODY_W = 555.28
+    const C_NR    = M;                         //  20 wide
+    const C_NAME  = M + 22;                    //  flexible
+    const C_UM    = M + BODY_W - 222;          //  30 wide, center
+    const C_QTY   = M + BODY_W - 188;          //  42 wide, right
+    const C_PRICE = M + BODY_W - 142;          //  54 wide, right
+    const C_TVA   = M + BODY_W - 84;           //  40 wide, right
+    const C_TOTAL = M + BODY_W - 40;           //  40 wide, right  → ends at 555.28
+    const NAME_W  = C_UM - C_NAME - 4;
+
+    // Header
+    doc.rect(M, TABLE_Y, BODY_W, 17).fill(BLACK);
+    doc.font("Bold").fontSize(7.5).fill("#FFFFFF");
+    const TH = TABLE_Y + 4.5;
+    doc.text("Nr.",         C_NR,    TH, { width: 20,   align: "center" });
+    doc.text("Denumire",    C_NAME,  TH, { width: NAME_W });
+    doc.text("UM",          C_UM,    TH, { width: 30,   align: "center" });
+    doc.text("Cant.",       C_QTY,   TH, { width: 42,   align: "right" });
+    doc.text("Pret unitar (lei)", C_PRICE, TH, { width: 54, align: "right" });
+    doc.text("TVA%",        C_TVA,   TH, { width: 40,   align: "right" });
+    doc.text("Total",       C_TOTAL, TH, { width: 40,   align: "right" });
+
+    const allItems = data.items;
+
+    let rowY = TABLE_Y + 17;
+    allItems.forEach((item, i) => {
+      const bg = i % 2 === 0 ? "#FFFFFF" : BG_ALT;
+      doc.rect(M, rowY, BODY_W, 15).fill(bg);
+
+      const priceNoTva = item.price / (1 + TVA_RATE);
+      const lineTotal  = item.price * item.quantity;
+
+      doc.font("Regular").fontSize(8).fill(DGRAY);
+      doc.text(String(i + 1),          C_NR,    rowY + 3.5, { width: 20,   align: "center" });
+      doc.text(item.name,              C_NAME,  rowY + 3.5, { width: NAME_W });
+      doc.text("buc",                  C_UM,    rowY + 3.5, { width: 30,   align: "center" });
+      doc.text(String(item.quantity),  C_QTY,   rowY + 3.5, { width: 42,   align: "right" });
+      doc.text(priceNoTva.toFixed(2),  C_PRICE, rowY + 3.5, { width: 54,   align: "right" });
+      doc.text("21%",                  C_TVA,   rowY + 3.5, { width: 40,   align: "right" });
+      doc.text(lineTotal.toFixed(2),   C_TOTAL, rowY + 3.5, { width: 40,   align: "right" });
+
+      rowY += 15;
+    });
+
+    doc.moveTo(M, rowY).lineTo(PAGE_W - M, rowY)
+      .strokeColor(LGRAY).lineWidth(0.5).stroke();
+
+    // ── TOTALS ────────────────────────────────────────────────────────────────
+    const TOT_X  = PAGE_W - M - 220;
+    const VAL_X  = PAGE_W - M - 80;
+    const VAL_W  = 80;
+    let totY = rowY + 12;
+
+    const totRow = (label: string, value: string, bold = false) => {
+      const f = bold ? "Bold" : "Regular";
+      const sz = bold ? 10 : 8.5;
+      const col = bold ? BLACK : DGRAY;
+      doc.font(f).fontSize(sz).fill(col)
+        .text(label, TOT_X, totY, { width: VAL_X - TOT_X - 8 });
+      doc.font(f).fontSize(sz).fill(col)
+        .text(value, VAL_X, totY, { width: VAL_W, align: "right" });
+      totY += bold ? 16 : 14;
+    };
+
+    // Subtotal fara TVA = only items (no delivery), TVA on items only
+    const itemsTotal   = data.subtotal;                           // items incl. TVA
+    const subtotalNoTva = itemsTotal / (1 + TVA_RATE);
+    const tvaAmount     = itemsTotal - subtotalNoTva;
+
+    totRow("Subtotal fara TVA:", `${subtotalNoTva.toFixed(2)} lei`);
+    totRow("TVA (21%):",         `${tvaAmount.toFixed(2)} lei`);
     if (data.deliveryFee > 0) {
       totRow("Taxa livrare:", `${data.deliveryFee.toFixed(2)} lei`);
     }
 
     totY += 2;
-    doc.moveTo(TOT_X, totY).lineTo(PAGE_W - MARGIN, totY)
+    doc.moveTo(TOT_X, totY).lineTo(PAGE_W - M, totY)
       .strokeColor(BRAND).lineWidth(1).stroke();
     totY += 6;
 
-    // TOTAL row with background
-    doc.rect(TOT_X - 4, totY - 2, TOT_W + 8, 20).fill("#f9f1ea");
-    doc.font("Bold").fontSize(11).fill(BRAND)
-      .text("TOTAL:", TOT_X, totY + 2, { width: 110 })
-      .text(`${data.total.toFixed(2)} Lei`, TOT_X + 110, totY + 2, { width: TOT_W - 110, align: "right" });
+    // Total highlight
+    doc.rect(TOT_X - 6, totY - 3, PAGE_W - M - TOT_X + 6, 22).fill(BG_BOX);
+    doc.moveTo(TOT_X - 6, totY - 3).lineTo(TOT_X - 2, totY - 3)
+    doc.rect(TOT_X - 6, totY - 3, 3, 22).fill(BRAND);
+    totRow("TOTAL:", `${data.total.toFixed(2)} Lei`, true);
 
-    // ── Footer ────────────────────────────────────────────
-    const footY = 800;
-    doc.moveTo(MARGIN, footY).lineTo(PAGE_W - MARGIN, footY)
-      .strokeColor("#dddddd").lineWidth(0.5).stroke();
+    // ── FOOTER ───────────────────────────────────────────────────────────────
+    const FOOT_Y = PAGE_H - 42;
+    doc.rect(0, FOOT_Y - 8, PAGE_W, 1).fill(BRAND).opacity(0.3);
+    doc.opacity(1);
 
-    doc.font("Regular").fontSize(7.5).fill(LGRAY)
+    doc.font("Regular").fontSize(6.5).fill(GRAY)
       .text(
-        "Factura este valabila fara semnatura si stampila conform art. 4, alin (2) din Ordonanta nr. 17/2015.",
-        MARGIN, footY + 8,
-        { width: PAGE_W - MARGIN * 2, align: "center" }
-      );
-
-    doc.font("Regular").fontSize(7).fill(LGRAY)
-      .text(
-        `Donut Studio S.R.L.  |  ${COMPANY.email}  |  ${COMPANY.phone}  |  ${COMPANY.address}, ${COMPANY.city}`,
-        MARGIN, footY + 20,
-        { width: PAGE_W - MARGIN * 2, align: "center" }
+        "Factura circula fara semnatura si stampila cf. art.V, alin (2) din Ordonanta nr.17/2015 si art. 319 alin (29) din Legea nr. 227/2015 privind Codul fiscal.",
+        M, FOOT_Y,
+        { width: BODY_W, align: "center" },
       );
 
     doc.end();

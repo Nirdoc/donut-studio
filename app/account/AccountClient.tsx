@@ -218,9 +218,11 @@ export default function AccountClient() {
               <div className="space-y-1">
                 {[
                   { icon: ShoppingBag, label: "Mergi la meniu", href: "/menu" },
-                  { icon: MapPin, label: "Locația noastră", href: "#" },
+                  { icon: MapPin, label: "Locația noastră", href: "https://www.google.com/maps/place/Donut+Studio/@44.4523756,26.0776639,17z/data=!3m1!4b1!4m6!3m5!1s0x40b203fa98df641d:0xfbc237c77c774c18!8m2!3d44.4523718!4d26.0802388!16s%2Fg%2F11cr_5r6dq?entry=ttu&g_ep=EgoyMDI2MDQwMS4wIKXMDSoASAFQAw%3D%3D" },
                 ].map((item) => (
                   <Link key={item.label} href={item.href}
+                    target={item.href.startsWith("http") ? "_blank" : undefined}
+                    rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#BC8157]/8 transition-colors text-sm text-[var(--text-50)] hover:text-[#BC8157]">
                     <item.icon size={15} />
                     {item.label}

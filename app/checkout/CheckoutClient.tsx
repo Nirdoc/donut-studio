@@ -7,8 +7,92 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCartStore, useAuthStore } from "@/lib/store";
 import {
   ShoppingBag, CreditCard, ChevronLeft, Lock,
-  Calendar, Clock, User, Building2, Banknote, Store, Check, Home,
+  Calendar, Clock, User, Building2, Banknote, Store, Check, Home, ChevronRight,
 } from "lucide-react";
+
+const MONTHS_RO = ["Ianuarie","Februarie","Martie","Aprilie","Mai","Iunie","Iulie","August","Septembrie","Octombrie","Noiembrie","Decembrie"];
+const DAYS_RO = ["Lu","Ma","Mi","Jo","Vi","Sâ","Du"];
+
+function DatePicker({ value, min, onChange }: { value: string; min: string; onChange: (v: string) => void }) {
+  const today = new Date(min + "T00:00:00");
+  const initDate = value ? new Date(value + "T00:00:00") : today;
+  const [view, setView] = useState({ year: initDate.getFullYear(), month: initDate.getMonth() });
+
+  const daysInMonth = new Date(view.year, view.month + 1, 0).getDate();
+  // Monday-based: 0=Mon...6=Sun
+  const firstDow = (new Date(view.year, view.month, 1).getDay() + 6) % 7;
+
+  const prevMonth = () => {
+    setView(v => v.month === 0 ? { year: v.year - 1, month: 11 } : { ...v, month: v.month - 1 });
+  };
+  const nextMonth = () => {
+    setView(v => v.month === 11 ? { year: v.year + 1, month: 0 } : { ...v, month: v.month + 1 });
+  };
+
+  const toISO = (d: number) =>
+    `${view.year}-${String(view.month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+
+  const isDisabled = (d: number) => toISO(d) < min;
+  const isSelected = (d: number) => toISO(d) === value;
+  const isToday = (d: number) => toISO(d) === min;
+
+  return (
+    <div className="rounded-2xl border border-[#BC8157]/20 overflow-hidden" style={{ background: "var(--card-bg, var(--bg))" }}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#BC8157]/10">
+        <button type="button" onClick={prevMonth}
+          className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-[#BC8157]/10 transition-colors"
+          style={{ color: "var(--text-40)" }}>
+          <ChevronLeft size={16} />
+        </button>
+        <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+          {MONTHS_RO[view.month]} {view.year}
+        </span>
+        <button type="button" onClick={nextMonth}
+          className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-[#BC8157]/10 transition-colors"
+          style={{ color: "var(--text-40)" }}>
+          <ChevronRight size={16} />
+        </button>
+      </div>
+
+      <div className="p-3">
+        {/* Days of week */}
+        <div className="grid grid-cols-7 mb-1">
+          {DAYS_RO.map(d => (
+            <div key={d} className="text-center text-[11px] font-semibold py-1" style={{ color: "var(--text-30)" }}>{d}</div>
+          ))}
+        </div>
+
+        {/* Days grid */}
+        <div className="grid grid-cols-7 gap-y-0.5">
+          {Array.from({ length: firstDow }).map((_, i) => <div key={`e-${i}`} />)}
+          {Array.from({ length: daysInMonth }).map((_, i) => {
+            const d = i + 1;
+            const disabled = isDisabled(d);
+            const selected = isSelected(d);
+            const today_ = isToday(d);
+            return (
+              <button
+                key={d} type="button"
+                disabled={disabled}
+                onClick={() => onChange(toISO(d))}
+                className={`mx-auto flex items-center justify-center w-8 h-8 rounded-xl text-sm font-medium transition-all
+                  ${selected ? "text-white shadow-lg" : ""}
+                  ${!selected && today_ ? "ring-1 ring-[#BC8157]" : ""}
+                  ${!selected && !disabled ? "hover:bg-[#BC8157]/15" : ""}
+                  ${disabled ? "opacity-25 cursor-not-allowed" : "cursor-pointer"}
+                `}
+                style={selected ? { background: "#BC8157", color: "#fff" } : { color: disabled ? "var(--text-30)" : "var(--text)" }}
+              >
+                {d}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 type Step = 1 | 2 | 3;
 type PaymentMethod = "cash" | "card" | "pickup";
@@ -564,11 +648,10 @@ export default function CheckoutClient() {
                         <Calendar size={13} className="text-[#BC8157]" />
                         Data de livrare <span className="text-red-400">*</span>
                       </label>
-                      <input
-                        required type="date" min={todayISO()}
+                      <DatePicker
                         value={deliveryDate}
-                        onChange={(e) => handleDateChange(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl text-sm input-dark bg-transparent text-[var(--text)]"
+                        min={todayISO()}
+                        onChange={handleDateChange}
                       />
                     </div>
 

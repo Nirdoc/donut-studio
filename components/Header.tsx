@@ -24,7 +24,7 @@ export default function Header() {
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const totalItems = useCartStore((s) => s.totalItems);
+  const totalItems = useCartStore((s) => s.items.reduce((sum, i) => sum + i.quantity, 0));
   const openCart = useCartStore((s) => s.openCart);
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
@@ -46,6 +46,7 @@ export default function Header() {
   }, []);
 
   return (
+    <>
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500`}>
       <AnnouncementBar visible={barVisible} />
     <div className={`transition-all duration-500 ${
@@ -170,13 +171,13 @@ export default function Header() {
               <ShoppingBag size={20} />
               {mounted && (
                 <AnimatePresence>
-                  {totalItems() > 0 && (
+                  {totalItems > 0 && (
                     <motion.span
-                      key={totalItems()}
+                      key={totalItems}
                       initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
                       className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#BC8157] text-white text-[10px] rounded-full flex items-center justify-center font-bold"
                     >
-                      {totalItems()}
+                      {totalItems}
                     </motion.span>
                   )}
                 </AnimatePresence>
@@ -258,5 +259,7 @@ export default function Header() {
       </AnimatePresence>
     </div>
     </header>
+
+    </>
   );
 }

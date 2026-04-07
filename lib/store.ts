@@ -106,11 +106,32 @@ export const useThemeStore = create<ThemeStore>()(
 
 export const useAuthStore = create<AuthStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       token: null,
-      login: (user, token) => set({ user, token }),
-      logout: () => set({ user: null, token: null }),
+      login: (user, token) => {
+        // Restaurează coșul salvat al acestui user
+        try {
+          const saved = localStorage.getItem(`donut-cart-user-${user.id}`);
+          if (saved) {
+            const items = JSON.parse(saved);
+            useCartStore.setState({ items });
+          }
+        } catch { /* ignore */ }
+        set({ user, token });
+      },
+      logout: () => {
+        // Salvează coșul curent pentru acest user
+        const user = get().user;
+        if (user) {
+          try {
+            const items = useCartStore.getState().items;
+            localStorage.setItem(`donut-cart-user-${user.id}`, JSON.stringify(items));
+          } catch { /* ignore */ }
+        }
+        useCartStore.getState().clearCart();
+        set({ user: null, token: null });
+      },
     }),
     { name: "donut-auth" }
   )

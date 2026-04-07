@@ -24,7 +24,14 @@ const TIME_SLOTS = [
   { label: "20:00 – 22:00", startHour: 20 },
 ];
 
-const DELIVERY_FEE = 25;
+function calcDeliveryFee(addr: { city: string; judet: string }): number {
+  if (addr.judet === "Ilfov") return 35;
+  if (addr.city === "București") {
+    if (["Sector 3", "Sector 4", "Sector 5"].includes(addr.judet)) return 35;
+    if (["Sector 1", "Sector 2", "Sector 6"].includes(addr.judet)) return 25;
+  }
+  return 25; // fallback
+}
 
 function todayISO() {
   return new Date().toISOString().split("T")[0];
@@ -341,7 +348,8 @@ export default function CheckoutClient() {
 
   // Derived
   const totalQty = items.reduce((s, i) => s + i.quantity, 0);
-  const fee = paymentMethod === "pickup" ? 0 : DELIVERY_FEE;
+  const activeAddr = differentDelivery ? deliveryAddr : billingAddr;
+  const fee = paymentMethod === "pickup" ? 0 : calcDeliveryFee(activeAddr);
   const grandTotal = totalPrice() + fee;
 
   const availableSlots = useMemo(() => {
@@ -759,8 +767,8 @@ export default function CheckoutClient() {
 
                     <div className="space-y-3 mb-6">
                       {[
-                        { id: "cash"   as PaymentMethod, icon: Banknote,   title: "Numerar la livrare",   desc: `Taxa de livrare: ${DELIVERY_FEE} lei`,                   disabled: false },
-                        { id: "card"   as PaymentMethod, icon: CreditCard, title: "Plată cu cardul",      desc: `Taxa de livrare: ${DELIVERY_FEE} lei`,                   disabled: false },
+                        { id: "cash"   as PaymentMethod, icon: Banknote,   title: "Numerar la livrare",   desc: `Taxa de livrare: ${fee} lei`,                   disabled: false },
+                        { id: "card"   as PaymentMethod, icon: CreditCard, title: "Plată cu cardul",      desc: `Taxa de livrare: ${fee} lei`,                   disabled: false },
                         { id: "pickup" as PaymentMethod, icon: Store,       title: "Ridicare din magazin", desc: "Fără taxă de livrare · Piața Victoriei, București",      disabled: !pickupAllowed },
                       ].map((opt) => {
                         const selected = paymentMethod === opt.id;
@@ -881,7 +889,7 @@ export default function CheckoutClient() {
                   <span>Livrare</span>
                   {paymentMethod === "pickup"
                     ? <span className="text-green-500 font-medium">Gratuită</span>
-                    : <span>{DELIVERY_FEE} lei</span>}
+                    : <span>{fee} lei</span>}
                 </div>
                 <div className="flex justify-between font-bold text-lg pt-2 text-[var(--text)]">
                   <span>Total</span>

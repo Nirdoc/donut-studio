@@ -8,14 +8,17 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const q = searchParams.get("q")?.trim() ?? "";
 
-    const where = q ? {
-      OR: [
-        { facturaNumber: { contains: q, mode: "insensitive" as const } },
-        { email: { contains: q, mode: "insensitive" as const } },
-        { firstName: { contains: q, mode: "insensitive" as const } },
-        { lastName: { contains: q, mode: "insensitive" as const } },
-      ],
-    } : {};
+    const where: Record<string, unknown> = {
+      comanda: { paymentMethod: "card" },
+    };
+    if (q) {
+      where.OR = [
+        { facturaNumber: { contains: q, mode: "insensitive" } },
+        { email: { contains: q, mode: "insensitive" } },
+        { firstName: { contains: q, mode: "insensitive" } },
+        { lastName: { contains: q, mode: "insensitive" } },
+      ];
+    }
 
     const facturas = await prisma.factura.findMany({
       where,

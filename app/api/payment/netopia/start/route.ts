@@ -23,7 +23,8 @@ export async function POST(req: NextRequest) {
     try { userId = verifyAuth(req).id; } catch { /* guest */ }
 
     const orderNumber = await nextOrderNumber();
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+    const baseUrl    = process.env.NEXT_PUBLIC_BASE_URL    ?? "http://localhost:3000";
+    const ipnBaseUrl = process.env.NETOPIA_IPN_BASE_URL   ?? baseUrl;
 
     // Creăm comanda cu status PENDING_PAYMENT
     await prisma.comanda.create({
@@ -90,7 +91,7 @@ export async function POST(req: NextRequest) {
         vat:      21,
         quantity: item.quantity,
       })),
-      confirmUrl: `${baseUrl}/api/payment/netopia/ipn`,
+      confirmUrl: `${ipnBaseUrl}/api/payment/netopia/ipn`,
       returnUrl:  `${baseUrl}/order-success`,
       browser:    browserData,
     });

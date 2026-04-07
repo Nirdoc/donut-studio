@@ -151,7 +151,9 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
     </tr>`
   ).join("");
 
-  const invoiceNote = `<p style="margin:24px 0 0;color:rgba(240,221,200,0.55);font-size:13px;">Factura în format PDF va fi trimisă pe email după ce comanda este <strong style="color:#D4956A;">finalizată</strong>.</p>`;
+  const invoiceNote = data.paymentMethod === "card"
+    ? `<p style="margin:24px 0 0;color:rgba(240,221,200,0.55);font-size:13px;">Factura în format PDF va fi trimisă pe email după ce comanda este <strong style="color:#D4956A;">finalizată</strong>.</p>`
+    : `<p style="margin:24px 0 0;color:rgba(240,221,200,0.55);font-size:13px;">Vei primi un email de confirmare după ce comanda ta este <strong style="color:#D4956A;">finalizată</strong>.</p>`;
 
   const body = `
     <h2 style="margin:0 0 6px;color:#f0ddc8;font-size:20px;font-weight:700;">Comandă confirmată!</h2>
@@ -279,6 +281,46 @@ export async function sendInvoiceEmail(invoiceData: InvoiceData, pdfBuffer: Buff
       content: pdfBuffer,
       contentType: "application/pdf",
     }],
+  });
+}
+
+export async function sendOrderCompletedEmail(data: {
+  firstName: string;
+  email: string;
+  orderNumber: string;
+  paymentMethod: string;
+}) {
+  const payLabel =
+    data.paymentMethod === "pickup" ? "Ridicare din magazin" : "Numerar la livrare";
+
+  const body = `
+    <h2 style="margin:0 0 6px;color:#f0ddc8;font-size:20px;font-weight:700;">Comanda ta a fost finalizată! 🎉</h2>
+    <p style="margin:0 0 24px;color:rgba(240,221,200,0.65);font-size:14px;">
+      Bună, <strong style="color:#D4956A;">${data.firstName}</strong>!
+      Comanda ta a fost finalizată cu succes. Îți mulțumim că ai ales <strong style="color:#BC8157;">Donut Studio</strong>!
+    </p>
+    <div style="background:rgba(188,129,87,0.10);border:1px solid rgba(188,129,87,0.20);border-radius:12px;padding:16px 20px;margin-bottom:24px;">
+      <p style="margin:0 0 4px;color:rgba(240,221,200,0.45);font-size:11px;text-transform:uppercase;letter-spacing:0.1em;">Număr comandă</p>
+      <p style="margin:0;color:#BC8157;font-size:18px;font-weight:800;">${data.orderNumber}</p>
+      <p style="margin:6px 0 0;color:rgba(240,221,200,0.45);font-size:12px;">${payLabel}</p>
+    </div>
+    <p style="margin:0 0 16px;color:rgba(240,221,200,0.65);font-size:14px;line-height:1.7;">
+      Sperăm că gogoșile noastre ți-au adus un zâmbet pe față! 🍩<br>
+      Ne-ar face plăcere să te revedem curând.
+    </p>
+    <p style="margin:0;color:rgba(240,221,200,0.40);font-size:13px;line-height:1.7;">
+      Dacă ai întrebări sau nelămuriri, ne poți contacta la
+      <a href="mailto:contact@donutstudio.ro" style="color:#BC8157;">contact@donutstudio.ro</a>
+      sau la <a href="tel:0745018888" style="color:#BC8157;">0745.018.888</a>.
+    </p>
+  `;
+
+  const transporter = createTransporter();
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM ?? "Donut Studio <noreply@donutstudio.ro>",
+    to: data.email,
+    subject: `Comanda ${data.orderNumber} a fost finalizată — Donut Studio`,
+    html: emailShell(body),
   });
 }
 

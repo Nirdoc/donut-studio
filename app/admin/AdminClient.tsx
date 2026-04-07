@@ -721,8 +721,13 @@ interface AdminOrder {
 }
 
 const statusConfig: Record<string, { label: string; cls: string }> = {
-  PENDING_PAYMENT: { label: "Plată în curs", cls: "bg-purple-500/12 text-purple-600 border-purple-500/25" },
-  PENDING:    { label: "În așteptare", cls: "bg-amber-500/12 text-amber-600 border-amber-500/25" },
+  PLATITA:    { label: "Plătită",      cls: "bg-teal-500/12 text-teal-600 border-teal-500/25" },
+  PROCESSING: { label: "În procesare", cls: "bg-blue-500/12 text-blue-600 border-blue-500/25" },
+  FINALIZAT:  { label: "Finalizat",    cls: "bg-green-500/12 text-green-600 border-green-500/25" },
+};
+
+const statusBadgeConfig: Record<string, { label: string; cls: string }> = {
+  PLATITA:    { label: "Plătită",      cls: "bg-teal-500/12 text-teal-600 border-teal-500/25" },
   PROCESSING: { label: "În procesare", cls: "bg-blue-500/12 text-blue-600 border-blue-500/25" },
   FINALIZAT:  { label: "Finalizat",    cls: "bg-green-500/12 text-green-600 border-green-500/25" },
   ANULAT:     { label: "Anulat",       cls: "bg-red-500/12 text-red-500 border-red-500/25" },
@@ -738,7 +743,7 @@ function ComenziTab({ token }: { token: string }) {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [marking, setMarking] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
@@ -810,7 +815,7 @@ function ComenziTab({ token }: { token: string }) {
         </div>
         <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
           className="px-4 py-2.5 text-sm rounded-xl input-dark bg-transparent text-[var(--text)]">
-          <option value="">Toate statusurile</option>
+          <option value="all">Toate statusurile</option>
           {Object.entries(statusConfig).map(([k, v]) => (
             <option key={k} value={k}>{v.label}</option>
           ))}
@@ -836,7 +841,9 @@ function ComenziTab({ token }: { token: string }) {
               </thead>
               <tbody>
                 {orders.map((o) => {
-                  const st = statusConfig[o.status] ?? statusConfig.PENDING;
+                  const st = (o.status === "ANULAT" && o.paymentMethod === "card")
+                    ? { label: "Plată eșuată", cls: "bg-red-500/12 text-red-500 border-red-500/25" }
+                    : statusBadgeConfig[o.status] ?? statusBadgeConfig.PROCESSING;
                   const pm = paymentLabel[o.paymentMethod];
                   const isExpanded = expanded === o.id;
                   return (
@@ -884,7 +891,7 @@ function ComenziTab({ token }: { token: string }) {
                           </span>
                           {o.factura && (
                             <p className="text-xs mt-1" style={{ color: o.factura.emailed ? "var(--text-35)" : "var(--text-50)" }}>
-                              {o.factura.facturaNumber} {o.factura.emailed ? "· trimisă" : "· neprimisă"}
+                              {o.factura.facturaNumber} {o.factura.emailed ? "· trimisă" : "· netrimisă"}
                             </p>
                           )}
                         </td>
@@ -990,7 +997,7 @@ function FacturiTab({ token }: { token: string }) {
             <table className="w-full">
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                  {["Factură", "Comandă", "Client", "Total", "Status email", "Emisă", ""].map((h) => (
+                  {["Factură", "Comandă", "Client", "Total", "Status", "Emisă", ""].map((h) => (
                     <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider"
                       style={{ color: "var(--text-35)" }}>{h}</th>
                   ))}
@@ -999,7 +1006,7 @@ function FacturiTab({ token }: { token: string }) {
               <tbody>
                 {facturas.map((f) => {
                   const pm = paymentLabel[f.comanda.paymentMethod];
-                  const orderSt = statusConfig[f.comanda.status] ?? statusConfig.PENDING;
+                  const orderSt = statusBadgeConfig[f.comanda.status] ?? statusBadgeConfig.PROCESSING;
                   return (
                     <tr key={f.id} style={{ borderBottom: "1px solid var(--border)" }}
                       className="hover:bg-[#BC8157]/4 transition-colors">
@@ -1030,8 +1037,8 @@ function FacturiTab({ token }: { token: string }) {
                             <CheckCircle size={11} /> Trimisă
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border bg-amber-500/12 text-amber-600 border-amber-500/25">
-                            <ClockIcon size={11} /> Așteptare
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border bg-red-500/12 text-red-500 border-red-500/25">
+                            <XCircle size={11} /> Netrimisă
                           </span>
                         )}
                       </td>
@@ -1041,30 +1048,31 @@ function FacturiTab({ token }: { token: string }) {
                         </p>
                       </td>
                       <td className="px-5 py-4">
-                        <a
-                          href={`/api/admin/facturas/${f.id}/pdf`}
-                          download={`${f.facturaNumber}.pdf`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Atașăm token-ul în header nu e posibil cu <a>, folosim fetch
-                            e.preventDefault();
-                            fetch(`/api/admin/facturas/${f.id}/pdf`, {
-                              headers: { Authorization: `Bearer ${token}` },
-                            })
-                              .then((r) => r.blob())
-                              .then((blob) => {
-                                const url = URL.createObjectURL(blob);
-                                const a = document.createElement("a");
-                                a.href = url;
-                                a.download = `${f.facturaNumber}.pdf`;
-                                a.click();
-                                URL.revokeObjectURL(url);
-                              });
-                          }}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#BC8157] border border-[#BC8157]/30 hover:bg-[#BC8157]/10 transition-colors"
-                        >
-                          <Download size={12} /> PDF
-                        </a>
+                        {f.comanda.paymentMethod === "card" && (
+                          <a
+                            href={`/api/admin/facturas/${f.id}/pdf`}
+                            download={`${f.facturaNumber}.pdf`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              fetch(`/api/admin/facturas/${f.id}/pdf`, {
+                                headers: { Authorization: `Bearer ${token}` },
+                              })
+                                .then((r) => r.blob())
+                                .then((blob) => {
+                                  const url = URL.createObjectURL(blob);
+                                  const a = document.createElement("a");
+                                  a.href = url;
+                                  a.download = `${f.facturaNumber}.pdf`;
+                                  a.click();
+                                  URL.revokeObjectURL(url);
+                                });
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#BC8157] border border-[#BC8157]/30 hover:bg-[#BC8157]/10 transition-colors"
+                          >
+                            <Download size={12} /> PDF
+                          </a>
+                        )}
                       </td>
                     </tr>
                   );
@@ -1166,12 +1174,12 @@ function HBar({ value, max, color = "#BC8157" }: { value: number; max: number; c
 }
 
 const STATUS_LABELS: Record<string, string> = {
-  PENDING_PAYMENT: "Plată în curs", PENDING: "În așteptare",
-  PROCESSING: "În procesare", FINALIZAT: "Finalizat", ANULAT: "Anulat",
+  PLATITA: "Plătită", PROCESSING: "În procesare",
+  FINALIZAT: "Finalizat", ANULAT: "Anulat",
 };
 const STATUS_COLORS: Record<string, string> = {
-  PENDING_PAYMENT: "#a855f7", PENDING: "#f59e0b",
-  PROCESSING: "#3b82f6", FINALIZAT: "#22c55e", ANULAT: "#ef4444",
+  PLATITA: "#14b8a6", PROCESSING: "#3b82f6",
+  FINALIZAT: "#22c55e", ANULAT: "#ef4444",
 };
 const PAYMENT_LABELS: Record<string, string> = { cash: "Numerar", card: "Card", pickup: "Ridicare" };
 const PAYMENT_COLORS: Record<string, string> = { cash: "#22c55e", card: "#3b82f6", pickup: "#BC8157" };

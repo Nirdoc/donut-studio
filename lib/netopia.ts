@@ -11,8 +11,8 @@
  * și setează NEXT_PUBLIC_BASE_URL la URL-ul ngrok.
  */
 
-const SANDBOX_URL = "https://secure.sandbox.netopia-payments.com/payment/card/v2";
-const LIVE_URL    = "https://secure.netopia-payments.com/payment/card/v2";
+const SANDBOX_URL = "https://secure.sandbox.netopia-payments.com/payment/card/start";
+const LIVE_URL    = "https://secure.netopia-payments.com/payment/card/start";
 
 export interface NetopiaBrowserData {
   userAgent:    string;
@@ -81,6 +81,12 @@ export async function initiateNetopiaPayment(input: NetopiaPaymentInput): Promis
   const body = {
     posSignature: signature,
     isLive: !isSandbox,
+    config: {
+      emailTemplate: "",
+      notifyUrl:     input.confirmUrl,
+      redirectUrl:   input.returnUrl,
+      language:      "ro",
+    },
     order: {
       ntpID:        "",
       posSignature: signature,
@@ -120,17 +126,27 @@ export async function initiateNetopiaPayment(input: NetopiaPaymentInput): Promis
     body: JSON.stringify(body),
   });
 
-  const json = await res.json();
+  const rawText = await res.text();
+  console.log("[netopia] status:", res.status);
+  console.log("[netopia] raw response:", rawText.slice(0, 500));
 
-  if (!res.ok || !json.payment?.paymentURL) {
+  let json: Record<string, unknown>;
+  try {
+    json = JSON.parse(rawText);
+  } catch {
+    throw new Error(`Netopia răspuns invalid [${res.status}]: ${rawText.slice(0, 300)}`);
+  }
+
+  if (!res.ok || !(json.payment as Record<string, unknown>)?.paymentURL) {
     throw new Error(
-      `Netopia error [${res.status}]: ${json.error?.message ?? JSON.stringify(json)}`
+      `Netopia error [${res.status}]: ${(json.error as Record<string, unknown>)?.message ?? JSON.stringify(json)}`
     );
   }
 
+  const payment = json.payment as Record<string, unknown>;
   return {
-    paymentUrl: json.payment.paymentURL,
-    ntpID:      json.payment.ntpID ?? "",
+    paymentUrl: payment.paymentURL as string,
+    ntpID:      (payment.ntpID as string) ?? "",
   };
 }
 

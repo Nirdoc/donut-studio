@@ -14,12 +14,14 @@ import { NETOPIA_STATUS } from "@/lib/netopia";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    console.log("[netopia/ipn] payload:", JSON.stringify(body, null, 2));
 
     const payment  = body.payment;
-    const orderID  = payment?.orderID as string | undefined;
-    const status   = payment?.status  as number | undefined;
+    const orderID  = (body.order?.orderID ?? payment?.orderID) as string | undefined;
+    const status   = payment?.status as number | undefined;
 
     if (!orderID || status === undefined) {
+      console.error("[netopia/ipn] missing orderID or status. order:", body.order, "payment:", payment);
       return NextResponse.json({ error: { code: "1", message: "Invalid payload" } }, { status: 400 });
     }
 
@@ -34,7 +36,7 @@ export async function POST(req: NextRequest) {
       // Plată confirmată
       await prisma.comanda.update({
         where: { orderNumber: orderID },
-        data:  { status: "PROCESSING" },
+        data:  { status: "PLATITA" },
       });
 
       // Trimitem email de confirmare
@@ -66,14 +68,13 @@ export async function POST(req: NextRequest) {
       } catch (emailErr) {
         console.error("[netopia/ipn] email failed:", emailErr);
       }
-    } else if (status === NETOPIA_STATUS.VOIDED || status === NETOPIA_STATUS.DECLINED) {
-      // Plată anulată / refuzată
+    } else {
+      // Orice alt status (VOIDED, DECLINED, PENDING) → ANULAT
       await prisma.comanda.update({
         where: { orderNumber: orderID },
         data:  { status: "ANULAT" },
       });
     }
-    // Status PENDING (5) → lăsăm PENDING_PAYMENT, așteptăm alt IPN
 
     // Netopia așteaptă întotdeauna acest răspuns
     return NextResponse.json({ error: { code: "0", message: "Confirmed" } });

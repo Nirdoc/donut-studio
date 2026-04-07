@@ -15,19 +15,24 @@ type Order = {
   id: string; orderNumber: string; createdAt: string;
   items: OrderItem[]; subtotal: number; deliveryFee: number;
   total: number; status: string; deliveryDate: string; deliveryTime: string;
+  paymentMethod: string;
 };
 
 const STATUS: Record<string, { label: string; dot: string; badge: string }> = {
-  PENDING:   { label: "În procesare", dot: "bg-amber-400",  badge: "bg-amber-400/15 text-amber-400" },
-  FINALIZAT: { label: "Finalizat",    dot: "bg-green-400",  badge: "bg-green-400/15  text-green-400" },
-  ANULAT:    { label: "Anulat",       dot: "bg-red-400",    badge: "bg-red-400/15    text-red-400"   },
+  PROCESSING:      { label: "În procesare",  dot: "bg-amber-400",  badge: "bg-amber-400/15 text-amber-400"  },
+  PENDING_PAYMENT: { label: "Anulată",       dot: "bg-red-400",    badge: "bg-red-400/15    text-red-400"   },
+  PLATITA:         { label: "Plătită",       dot: "bg-teal-400",   badge: "bg-teal-400/15  text-teal-400"   },
+  FINALIZAT:       { label: "Finalizat",     dot: "bg-green-400",  badge: "bg-green-400/15  text-green-400" },
+  ANULAT:          { label: "Anulat",        dot: "bg-red-400",    badge: "bg-red-400/15    text-red-400"   },
 };
 
 const PAGE_SIZE = 5;
 
 function OrderRow({ order, index }: { order: Order; index: number }) {
   const [open, setOpen] = useState(false);
-  const s = STATUS[order.status] ?? { label: order.status, dot: "bg-gray-400", badge: "bg-gray-400/15 text-gray-400" };
+  const s = (order.status === "ANULAT" && order.paymentMethod === "card")
+    ? { label: "Plată eșuată", dot: "bg-red-400", badge: "bg-red-400/15 text-red-400" }
+    : STATUS[order.status] ?? { label: order.status, dot: "bg-gray-400", badge: "bg-gray-400/15 text-gray-400" };
   const totalQty = order.items.reduce((a, i) => a + i.quantity, 0);
   const fmtDelivery = new Date(order.deliveryDate + "T12:00:00").toLocaleDateString("ro-RO", { day: "numeric", month: "short" });
 

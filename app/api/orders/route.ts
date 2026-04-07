@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
         status: true,
         deliveryDate: true,
         deliveryTime: true,
+        paymentMethod: true,
       },
     });
     return NextResponse.json(orders);
@@ -83,7 +84,7 @@ export async function POST(req: NextRequest) {
         subtotal,
         total,
         items,
-        status: "PENDING",
+        status: "PROCESSING",
       },
     });
 

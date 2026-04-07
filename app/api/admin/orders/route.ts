@@ -18,7 +18,13 @@ export async function GET(req: NextRequest) {
         { lastName: { contains: q, mode: "insensitive" } },
       ];
     }
-    if (status) where.status = status;
+    if (status === "all") {
+      // fără filtru de status
+    } else if (status) {
+      where.status = status;
+    } else {
+      where.status = { in: ["PLATITA", "PROCESSING"] };
+    }
 
     const orders = await prisma.comanda.findMany({
       where,

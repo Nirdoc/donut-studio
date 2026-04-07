@@ -11,7 +11,6 @@ export const revalidate = 60;
 
 export default async function MenuPage() {
   const rows = await prisma.gogoasa.findMany({
-    where: { available: true },
     orderBy: { createdAt: "asc" },
   });
 
@@ -25,6 +24,7 @@ export default async function MenuPage() {
     ingredients: d.ingredients,
     allergens: d.allergens,
     calories: d.calories,
+    available: d.available,
     category: d.category as Product["category"],
     nutrition: {
       perServing: { kcal: d.kcalServing, fat: d.fatServing, carbs: d.carbsServing, protein: d.proteinServing },

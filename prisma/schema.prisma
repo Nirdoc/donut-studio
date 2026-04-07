@@ -30,6 +30,25 @@ model User {
   resetTokens  PasswordResetToken[]
   comenzi      Comanda[]
   facturi      Factura[]
+  addresses    Address[]
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label      String
+  addrType   String   @default("billing")
+  judet      String
+  city       String
+  street     String
+  number     String
+  type       String   @default("casa")
+  bloc       String?
+  scara      String?
+  etaj       String?
+  apartament String?
+  createdAt  DateTime @default(now())
 }
 
 model Gogoasa {

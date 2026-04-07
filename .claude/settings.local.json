@@ -77,7 +77,15 @@
       "Bash(sips -g all /Users/codrin.ene/vsc/donut-studio/app/icon.png)",
       "Bash(mv /tmp/env_tmp /Users/codrin.ene/vsc/donut-studio/.env)",
       "Bash(npx vercel:*)",
-      "Bash(echo \"EXIT: $?\")"
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(npx dotenv:*)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_lBcoMJeUb54Y@ep-hidden-unit-an1gu9aa-pooler.c-6.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=verify-full\" npx prisma:*)",
+      "Bash(psql:*)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_lBcoMJeUb54Y@ep-hidden-unit-an1gu9aa-pooler.c-6.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=verify-full\" npx tsx scripts/check-addresses.ts)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_lBcoMJeUb54Y@ep-hidden-unit-an1gu9aa-pooler.c-6.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=verify-full\" npx tsx:*)",
+      "Bash(chmod +x /tmp/check_unused.sh)",
+      "Bash(chmod +x /tmp/find_unused_components.sh)",
+      "Bash(bash /tmp/find_unused_components.sh)"
     ]
   }
 }

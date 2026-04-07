@@ -2,11 +2,51 @@
 
 import { useCartStore } from "@/lib/store";
 import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
-import { X, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+import { X, Minus, Plus, ShoppingBag, Trash2, AlertCircle } from "lucide-react";
 
 export default function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, totalPrice } = useCartStore();
+  const router = useRouter();
+  const [unavailableNames, setUnavailableNames] = useState<string[]>([]);
+  const [checking, setChecking] = useState(false);
+
+  const handleCheckout = async () => {
+    setUnavailableNames([]);
+    setChecking(true);
+    try {
+      const ids = items.map((i) => i.product.id).join(",");
+      const res = await fetch(`/api/donuts?ids=${ids}`);
+      if (!res.ok) throw new Error("API error");
+
+      const fresh: Array<{ id: string; available: boolean }> = await res.json();
+
+      const bad = items
+        .filter((i) => {
+          const match = fresh.find((f) => f.id === i.product.id);
+          // unavailable dacă nu există în DB sau available === false
+          return !match || match.available === false;
+        })
+        .map((i) => i.product.name);
+
+      if (bad.length > 0) {
+        setUnavailableNames(bad);
+        setChecking(false);
+        return;
+      }
+
+      setChecking(false);
+      closeCart();
+      router.push("/checkout");
+    } catch {
+      setChecking(false);
+      // La eroare de rețea lasă serverul să valideze
+      closeCart();
+      router.push("/checkout");
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -138,10 +178,29 @@ export default function CartDrawer() {
                         <span className="font-bold text-2xl" style={{ color: "var(--text)" }}>{totalPrice().toFixed(2)} lei</span>
                       </div>
                       {canCheckout ? (
-                        <Link href="/checkout" onClick={closeCart}
-                          className="block w-full bg-[#BC8157] hover:bg-[#9a6540] text-white text-center py-4 rounded-2xl font-semibold transition-colors">
-                          Finalizează comanda
-                        </Link>
+                        <>
+                          {unavailableNames.length > 0 && (
+                            <div className="rounded-2xl p-4 space-y-2.5" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                              <div className="flex items-center gap-2">
+                                <AlertCircle size={15} className="text-red-400 flex-shrink-0" />
+                                <p className="text-xs font-semibold text-red-400">Produse indisponibile în coș</p>
+                              </div>
+                              <ul className="pl-5 space-y-1">
+                                {unavailableNames.map((name) => (
+                                  <li key={name} className="text-xs flex items-center gap-1.5" style={{ color: "var(--text-60)" }}>
+                                    <span className="w-1 h-1 rounded-full bg-red-400/60 flex-shrink-0" />
+                                    {name}
+                                  </li>
+                                ))}
+                              </ul>
+                              <p className="text-xs pl-5" style={{ color: "var(--text-40)" }}>Elimină-le din coș pentru a continua.</p>
+                            </div>
+                          )}
+                          <button onClick={handleCheckout} disabled={checking}
+                            className="block w-full bg-[#BC8157] hover:bg-[#9a6540] disabled:opacity-60 disabled:cursor-not-allowed text-white text-center py-4 rounded-2xl font-semibold transition-colors">
+                            {checking ? "Se verifică..." : "Finalizează comanda"}
+                          </button>
+                        </>
                       ) : (
                         <div
                           className="block w-full text-white text-center py-4 rounded-2xl font-semibold opacity-40 cursor-not-allowed select-none"

@@ -1,12 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ShoppingBag } from "lucide-react";
-import { products } from "@/lib/products";
+import { ArrowLeft } from "lucide-react";
+import { prisma } from "@/lib/db";
+import type { Product } from "@/lib/products";
 import AddToCartButton from "./AddToCartButton";
 
-export function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }));
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  const rows = await prisma.gogoasa.findMany({ select: { slug: true } });
+  return rows.map((r) => ({ slug: r.slug }));
 }
 
 export async function generateMetadata({
@@ -15,9 +19,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = products.find((p) => p.slug === slug);
-  if (!product) return {};
-  return { title: `${product.name} – Donut Studio` };
+  const row = await prisma.gogoasa.findUnique({ where: { slug }, select: { name: true } });
+  if (!row) return {};
+  return { title: `${row.name} – Donut Studio` };
 }
 
 const categoryColors: Record<string, string> = {
@@ -37,8 +41,26 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = products.find((p) => p.slug === slug);
-  if (!product) notFound();
+  const d = await prisma.gogoasa.findUnique({ where: { slug } });
+  if (!d) notFound();
+
+  const product: Product = {
+    id: d.id,
+    name: d.name,
+    slug: d.slug,
+    price: d.price,
+    image: d.image,
+    description: d.description,
+    ingredients: d.ingredients,
+    allergens: d.allergens,
+    calories: d.calories,
+    available: d.available,
+    category: d.category as Product["category"],
+    nutrition: {
+      perServing: { kcal: d.kcalServing, fat: d.fatServing, carbs: d.carbsServing, protein: d.proteinServing },
+      per100g:    { kcal: d.kcal100g,    fat: d.fat100g,    carbs: d.carbs100g,    protein: d.protein100g },
+    },
+  };
 
   const { nutrition } = product;
 
@@ -55,7 +77,7 @@ export default async function ProductPage({
         </Link>
 
         {/* Hero card */}
-        <div className="card rounded-3xl overflow-hidden mb-8">
+        <div className={`card rounded-3xl overflow-hidden mb-8 ${!product.available ? "opacity-70 grayscale" : ""}`}>
           <div className="grid grid-cols-1 md:grid-cols-2">
             {/* Image */}
             <div className="relative h-72 md:h-auto md:min-h-[420px]">
@@ -69,12 +91,15 @@ export default async function ProductPage({
                 loading="eager"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-              <div className="absolute top-4 left-4">
-                <span
-                  className={`text-xs font-medium px-2.5 py-1 rounded-full ${categoryColors[product.category]}`}
-                >
+              <div className="absolute top-4 left-4 flex items-center gap-2">
+                <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${categoryColors[product.category]}`}>
                   {categoryLabels[product.category]}
                 </span>
+                {!product.available && (
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-800/80 text-gray-300 border border-gray-600/40">
+                    Indisponibil
+                  </span>
+                )}
               </div>
             </div>
 
@@ -138,8 +163,6 @@ export default async function ProductPage({
             <h2 className="font-display text-2xl text-[var(--text)] mb-5">
               Valori nutriționale
             </h2>
-
-            {/* Table */}
             <div className="overflow-hidden rounded-2xl border border-[var(--border)]">
               <table className="w-full text-sm">
                 <thead>
@@ -157,42 +180,15 @@ export default async function ProductPage({
                 </thead>
                 <tbody>
                   {[
-                    {
-                      label: "Energie",
-                      serving: `${nutrition.perServing.kcal} kcal`,
-                      per100: `${nutrition.per100g.kcal} kcal`,
-                    },
-                    {
-                      label: "Grăsimi",
-                      serving: `${nutrition.perServing.fat} g`,
-                      per100: `${nutrition.per100g.fat} g`,
-                    },
-                    {
-                      label: "Carbohidrați",
-                      serving: `${nutrition.perServing.carbs} g`,
-                      per100: `${nutrition.per100g.carbs} g`,
-                    },
-                    {
-                      label: "Proteine",
-                      serving: `${nutrition.perServing.protein} g`,
-                      per100: `${nutrition.per100g.protein} g`,
-                    },
+                    { label: "Energie",      serving: `${nutrition.perServing.kcal} kcal`, per100: `${nutrition.per100g.kcal} kcal` },
+                    { label: "Grăsimi",      serving: `${nutrition.perServing.fat} g`,     per100: `${nutrition.per100g.fat} g` },
+                    { label: "Carbohidrați", serving: `${nutrition.perServing.carbs} g`,   per100: `${nutrition.per100g.carbs} g` },
+                    { label: "Proteine",     serving: `${nutrition.perServing.protein} g`, per100: `${nutrition.per100g.protein} g` },
                   ].map((row, i) => (
-                    <tr
-                      key={row.label}
-                      className={
-                        i < 3 ? "border-b border-[var(--border)]" : ""
-                      }
-                    >
-                      <td className="px-4 py-3 text-[var(--text-70)]">
-                        {row.label}
-                      </td>
-                      <td className="px-4 py-3 text-right text-[var(--text)] font-medium">
-                        {row.serving}
-                      </td>
-                      <td className="px-4 py-3 text-right text-[var(--text-50)]">
-                        {row.per100}
-                      </td>
+                    <tr key={row.label} className={i < 3 ? "border-b border-[var(--border)]" : ""}>
+                      <td className="px-4 py-3 text-[var(--text-70)]">{row.label}</td>
+                      <td className="px-4 py-3 text-right text-[var(--text)] font-medium">{row.serving}</td>
+                      <td className="px-4 py-3 text-right text-[var(--text-50)]">{row.per100}</td>
                     </tr>
                   ))}
                 </tbody>

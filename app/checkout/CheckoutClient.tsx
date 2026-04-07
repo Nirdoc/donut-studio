@@ -8,6 +8,7 @@ import { useCartStore, useAuthStore } from "@/lib/store";
 import {
   ShoppingBag, CreditCard, ChevronLeft, Lock,
   Calendar, Clock, User, Building2, Banknote, Store, Check, Home, ChevronRight,
+  MapPin, Trash2,
 } from "lucide-react";
 
 const MONTHS_RO = ["Ianuarie","Februarie","Martie","Aprilie","Mai","Iunie","Iulie","August","Septembrie","Octombrie","Noiembrie","Decembrie"];
@@ -138,6 +139,22 @@ const emptyAddress = (): AddressState => ({
   type: "casa",
   bloc: "", scara: "", etaj: "", apartament: "",
 });
+
+function addrMatchesSaved(current: AddressState, saved: SavedAddress): boolean {
+  return (
+    current.judet      === saved.judet &&
+    current.city       === saved.city &&
+    current.street     === saved.street &&
+    current.number     === saved.number &&
+    current.type       === saved.type &&
+    (current.bloc      || "") === (saved.bloc      ?? "") &&
+    (current.scara     || "") === (saved.scara     ?? "") &&
+    (current.etaj      || "") === (saved.etaj      ?? "") &&
+    (current.apartament|| "") === (saved.apartament?? "")
+  );
+}
+
+type SavedAddress = AddressState & { id: string; label: string; addrType: string };
 
 const SECTORS = ["Sector 1", "Sector 2", "Sector 3", "Sector 4", "Sector 5", "Sector 6"];
 
@@ -373,8 +390,21 @@ export default function CheckoutClient() {
   const { items, totalPrice, clearCart } = useCartStore();
   const user = useAuthStore((s) => s.user);
 
+  const [guestMode, setGuestMode] = useState(false);
   const [step, setStep] = useState<Step>(1);
+
+  // Adrese salvate
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const savedBilling  = savedAddresses.filter((a) => a.addrType === "billing");
+  const savedDelivery = savedAddresses.filter((a) => a.addrType === "delivery");
+  const [saveAddress, setSaveAddress] = useState(false);
+  const [addressLabel, setAddressLabel] = useState("Acasă");
+  const [saveDeliveryAddress, setSaveDeliveryAddress] = useState(false);
+  const [deliveryAddressLabel, setDeliveryAddressLabel] = useState("Livrare");
+  const [selectedBillingId, setSelectedBillingId] = useState<string | null>(null);
+  const [selectedDeliveryId, setSelectedDeliveryId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   // Step 1
   const [deliveryDate, setDeliveryDate] = useState("");
@@ -391,6 +421,11 @@ export default function CheckoutClient() {
   const [billingAddr, setBillingAddr] = useState<AddressState>(emptyAddress());
   const [differentDelivery, setDifferentDelivery] = useState(false);
   const [deliveryAddr, setDeliveryAddr] = useState<AddressState>(emptyAddress());
+
+  const selectedBilling       = savedBilling.find((a)  => a.id === selectedBillingId)  ?? null;
+  const selectedDelivery      = savedDelivery.find((a) => a.id === selectedDeliveryId) ?? null;
+  const billingAlreadySaved   = !!selectedBilling  && addrMatchesSaved(billingAddr,  selectedBilling);
+  const deliveryAlreadySaved  = !!selectedDelivery && addrMatchesSaved(deliveryAddr, selectedDelivery);
 
   // Validation
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -452,6 +487,16 @@ export default function CheckoutClient() {
     return deliveryMidnight - Date.now() >= 24 * 60 * 60 * 1000;
   }, [deliveryDate]);
 
+  // Fetch adrese salvate (doar utilizatori autentificați)
+  useEffect(() => {
+    if (!user) return;
+    const token = (() => { try { return JSON.parse(localStorage.getItem("donut-auth") ?? "{}").state?.token ?? ""; } catch { return ""; } })();
+    fetch("/api/addresses", { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => setSavedAddresses(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, [user]);
+
   // Reset payment method if pickup is selected but delivery date no longer qualifies
   useEffect(() => {
     if (!pickupAllowed && paymentMethod === "pickup") {
@@ -485,6 +530,7 @@ export default function CheckoutClient() {
 
   const handlePlaceOrder = async () => {
     setLoading(true);
+    setSubmitError("");
     try {
       const token = getToken();
 
@@ -509,10 +555,14 @@ export default function CheckoutClient() {
           body: JSON.stringify({ ...orderPayload(), browserData }),
         });
 
-        if (!res.ok) throw new Error("Eroare la inițierea plății.");
-        const { paymentUrl } = await res.json();
+        const data = await res.json();
+        if (!res.ok) {
+          setSubmitError(data.error ?? "Eroare la inițierea plății.");
+          setLoading(false);
+          return;
+        }
         clearCart();
-        window.location.href = paymentUrl;
+        window.location.href = data.paymentUrl;
         return;
       }
 
@@ -526,10 +576,16 @@ export default function CheckoutClient() {
         body: JSON.stringify(orderPayload()),
       });
 
-      if (!res.ok) throw new Error("Eroare server.");
+      const data = await res.json();
+      if (!res.ok) {
+        setSubmitError(data.error ?? "Eroare server.");
+        setLoading(false);
+        return;
+      }
       clearCart();
       router.push("/order-success");
     } catch {
+      setSubmitError("A apărut o eroare. Te rugăm să încerci din nou.");
       setLoading(false);
     }
   };
@@ -546,15 +602,15 @@ export default function CheckoutClient() {
     );
   }
 
-  if (!user && !loading) {
+  if (!user && !loading && !guestMode) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-6 pt-28 px-4 text-center">
         <Lock size={48} className="text-[#BC8157]/40" />
-        <h2 className="font-display text-2xl text-[var(--text)]">Trebuie să fii autentificat</h2>
+        <h2 className="font-display text-2xl text-[var(--text)]">Finalizează comanda</h2>
         <p className="text-sm max-w-xs" style={{ color: "var(--text-60)" }}>
-          Conectează-te la contul tău pentru a putea finaliza comanda.
+          Autentifică-te pentru a salva istoricul comenzilor sau continuă ca vizitator.
         </p>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <Link href="/login" className="bg-[#BC8157] text-white px-6 py-3 rounded-full font-medium hover:bg-[#9a6540] transition-colors">
             Autentifică-te
           </Link>
@@ -562,6 +618,15 @@ export default function CheckoutClient() {
             Creează cont
           </Link>
         </div>
+        <button
+          onClick={() => setGuestMode(true)}
+          className="text-sm underline underline-offset-4 transition-colors"
+          style={{ color: "var(--text-40)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-60)")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-40)")}
+        >
+          Continuă fără cont
+        </button>
       </div>
     );
   }
@@ -711,7 +776,29 @@ export default function CheckoutClient() {
                     </div>
                   </div>
 
-                  <form noValidate onSubmit={(e) => { e.preventDefault(); if (validateStep2()) setStep(3); }} className="space-y-5">
+                  <form noValidate onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (!validateStep2()) return;
+
+                    const saveAddr = async (addr: AddressState, label: string, addrType: "billing" | "delivery") => {
+                      try {
+                        const res = await fetch("/api/addresses", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+                          body: JSON.stringify({ ...addr, label: label || "Adresă", addrType }),
+                        });
+                        const saved = res.ok ? await res.json() : null;
+                        if (saved) setSavedAddresses((prev) => [...prev, saved]);
+                      } catch { /* ignorat */ }
+                    };
+
+                    await Promise.all([
+                      user && saveAddress ? saveAddr(billingAddr, addressLabel, "billing") : Promise.resolve(),
+                      user && saveDeliveryAddress && differentDelivery ? saveAddr(deliveryAddr, deliveryAddressLabel, "delivery") : Promise.resolve(),
+                    ]);
+
+                    setStep(3);
+                  }} className="space-y-5">
 
                     {/* ── Contact ── */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -780,7 +867,107 @@ export default function CheckoutClient() {
                       <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "var(--text-40)" }}>
                         Adresă facturare
                       </p>
+
+                      {/* Adrese salvate — vizibil doar pentru utilizatori autentificați */}
+                      {user && (
+                        <div className="mb-5 rounded-2xl border border-[#BC8157]/15 overflow-hidden" style={{ background: "var(--surface)" }}>
+                          <div className="flex items-center gap-2 px-4 py-3 border-b border-[#BC8157]/10">
+                            <MapPin size={14} className="text-[#BC8157]" />
+                            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-50)" }}>Adrese de facturare salvate</p>
+                          </div>
+
+                          {savedBilling.length === 0 ? (
+                            <p className="px-4 py-3 text-xs" style={{ color: "var(--text-40)" }}>
+                              Nicio adresă salvată. Completează formularul și bifează &quot;Salvează adresa&quot; pentru a o refolosi.
+                            </p>
+                          ) : (
+                            <div className="p-2 space-y-1.5">
+                              {savedBilling.map((addr) => {
+                                const isSelected = billingAddr.street === addr.street && billingAddr.number === addr.number && billingAddr.judet === addr.judet;
+                                return (
+                                  <div key={addr.id}
+                                    className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                                      isSelected ? "border-[#BC8157]/60 bg-[#BC8157]/10" : "border-transparent hover:border-[#BC8157]/25 hover:bg-[#BC8157]/5"
+                                    }`}
+                                    onClick={() => {
+                                      if (selectedBillingId === addr.id) {
+                                        setBillingAddr(emptyAddress());
+                                        setSelectedBillingId(null);
+                                      } else {
+                                        setBillingAddr({ judet: addr.judet, city: addr.city, street: addr.street, number: addr.number, type: addr.type as DwellingType, bloc: addr.bloc ?? "", scara: addr.scara ?? "", etaj: addr.etaj ?? "", apartament: addr.apartament ?? "" });
+                                        setSelectedBillingId(addr.id);
+                                        setSaveAddress(false);
+                                      }
+                                    }}
+                                  >
+                                    <div className={`w-4 h-4 rounded-full border-2 mt-0.5 flex-shrink-0 flex items-center justify-center transition-all ${
+                                      isSelected ? "border-[#BC8157] bg-[#BC8157]" : "border-[#BC8157]/30"
+                                    }`}>
+                                      {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium text-[var(--text)]">{addr.label}</p>
+                                      <p className="text-xs mt-0.5 truncate" style={{ color: "var(--text-50)" }}>
+                                        {addr.street} nr. {addr.number}{addr.bloc ? `, bl. ${addr.bloc}` : ""}, {addr.city || addr.judet}
+                                      </p>
+                                    </div>
+                                    <button type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        fetch(`/api/addresses/${addr.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${getToken()}` } })
+                                          .then(() => setSavedAddresses((prev) => prev.filter((a) => a.id !== addr.id)));
+                                      }}
+                                      className="p-1 rounded-lg hover:text-red-400 transition-colors flex-shrink-0"
+                                      style={{ color: "var(--text-25)" }}>
+                                      <Trash2 size={13} />
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                              <button type="button" onClick={() => setBillingAddr(emptyAddress())}
+                                className="w-full text-left px-3 py-2 text-xs rounded-xl transition-colors hover:bg-[#BC8157]/5"
+                                style={{ color: "var(--text-40)" }}>
+                                + Completează o adresă nouă
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       <AddressFields value={billingAddr} onChange={(v) => { setBillingAddr(v); }} errors={Object.fromEntries(Object.entries(errors).filter(([k]) => k.startsWith("b_")).map(([k, v]) => [k.slice(2), v]))} />
+
+                      {/* Salvează adresa */}
+                      {user && (
+                        <div className="mt-4 space-y-2.5">
+                          {billingAlreadySaved ? (
+                            <p className="text-xs" style={{ color: "var(--text-35)" }}>
+                              Această adresă este deja salvată în cont.
+                            </p>
+                          ) : (
+                            <>
+                              <label className="flex items-center gap-3 cursor-pointer select-none">
+                                <div className="relative">
+                                  <input type="checkbox" checked={saveAddress} onChange={(e) => setSaveAddress(e.target.checked)} className="sr-only" />
+                                  <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
+                                    saveAddress ? "bg-[#BC8157] border-[#BC8157]" : "border-[#BC8157]/40"
+                                  }`}>
+                                    {saveAddress && <Check size={11} className="text-white" strokeWidth={3} />}
+                                  </div>
+                                </div>
+                                <span className="text-sm" style={{ color: "var(--text-60)" }}>Salvează adresa în cont</span>
+                              </label>
+                              {saveAddress && (
+                                <input
+                                  value={addressLabel}
+                                  onChange={(e) => setAddressLabel(e.target.value)}
+                                  placeholder="ex: Acasă, Birou..."
+                                  className="w-full px-4 py-2.5 rounded-xl text-sm input-dark bg-transparent text-[var(--text)]"
+                                />
+                              )}
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* ── Checkbox altă adresă livrare ── */}
@@ -806,11 +993,110 @@ export default function CheckoutClient() {
                       {differentDelivery && (
                         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
                           className="overflow-hidden">
-                          <div className="border-t border-[#BC8157]/10 pt-5">
-                            <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: "var(--text-40)" }}>
+                          <div className="border-t border-[#BC8157]/10 pt-5 space-y-4">
+                            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-40)" }}>
                               Adresă livrare
                             </p>
+
+                            {/* Adrese salvate pt livrare */}
+                            {user && (
+                              <div className="rounded-2xl border border-[#BC8157]/15 overflow-hidden" style={{ background: "var(--surface)" }}>
+                                <div className="flex items-center gap-2 px-4 py-3 border-b border-[#BC8157]/10">
+                                  <MapPin size={14} className="text-[#BC8157]" />
+                                  <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-50)" }}>Adrese de livrare salvate</p>
+                                </div>
+                                {savedDelivery.length === 0 ? (
+                                  <p className="px-4 py-3 text-xs" style={{ color: "var(--text-40)" }}>
+                                    Nicio adresă salvată. Completează formularul și bifează &quot;Salvează adresa&quot; pentru a o refolosi.
+                                  </p>
+                                ) : (
+                                  <div className="p-2 space-y-1.5">
+                                    {savedDelivery.map((addr) => {
+                                      const isSelected = deliveryAddr.street === addr.street && deliveryAddr.number === addr.number && deliveryAddr.judet === addr.judet;
+                                      return (
+                                        <div key={addr.id}
+                                          className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                                            isSelected ? "border-[#BC8157]/60 bg-[#BC8157]/10" : "border-transparent hover:border-[#BC8157]/25 hover:bg-[#BC8157]/5"
+                                          }`}
+                                          onClick={() => {
+                                            if (selectedDeliveryId === addr.id) {
+                                              setDeliveryAddr(emptyAddress());
+                                              setSelectedDeliveryId(null);
+                                            } else {
+                                              setDeliveryAddr({ judet: addr.judet, city: addr.city, street: addr.street, number: addr.number, type: addr.type as DwellingType, bloc: addr.bloc ?? "", scara: addr.scara ?? "", etaj: addr.etaj ?? "", apartament: addr.apartament ?? "" });
+                                              setSelectedDeliveryId(addr.id);
+                                              setSaveDeliveryAddress(false);
+                                            }
+                                          }}
+                                        >
+                                          <div className={`w-4 h-4 rounded-full border-2 mt-0.5 flex-shrink-0 flex items-center justify-center transition-all ${
+                                            isSelected ? "border-[#BC8157] bg-[#BC8157]" : "border-[#BC8157]/30"
+                                          }`}>
+                                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-[var(--text)]">{addr.label}</p>
+                                            <p className="text-xs mt-0.5 truncate" style={{ color: "var(--text-50)" }}>
+                                              {addr.street} nr. {addr.number}{addr.bloc ? `, bl. ${addr.bloc}` : ""}, {addr.city || addr.judet}
+                                            </p>
+                                          </div>
+                                          <button type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              fetch(`/api/addresses/${addr.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${getToken()}` } })
+                                                .then(() => setSavedAddresses((prev) => prev.filter((a) => a.id !== addr.id)));
+                                            }}
+                                            className="p-1 rounded-lg hover:text-red-400 transition-colors flex-shrink-0"
+                                            style={{ color: "var(--text-25)" }}>
+                                            <Trash2 size={13} />
+                                          </button>
+                                        </div>
+                                      );
+                                    })}
+                                    <button type="button" onClick={() => setDeliveryAddr(emptyAddress())}
+                                      className="w-full text-left px-3 py-2 text-xs rounded-xl transition-colors hover:bg-[#BC8157]/5"
+                                      style={{ color: "var(--text-40)" }}>
+                                      + Completează o adresă nouă
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
                             <AddressFields value={deliveryAddr} onChange={setDeliveryAddr} required={differentDelivery} errors={Object.fromEntries(Object.entries(errors).filter(([k]) => k.startsWith("d_")).map(([k, v]) => [k.slice(2), v]))} />
+
+                            {/* Salvează adresa de livrare */}
+                            {user && (
+                              <div className="space-y-2.5">
+                                {deliveryAlreadySaved ? (
+                                  <p className="text-xs" style={{ color: "var(--text-35)" }}>
+                                    Această adresă este deja salvată în cont.
+                                  </p>
+                                ) : (
+                                  <>
+                                    <label className="flex items-center gap-3 cursor-pointer select-none">
+                                      <div className="relative">
+                                        <input type="checkbox" checked={saveDeliveryAddress} onChange={(e) => setSaveDeliveryAddress(e.target.checked)} className="sr-only" />
+                                        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
+                                          saveDeliveryAddress ? "bg-[#BC8157] border-[#BC8157]" : "border-[#BC8157]/40"
+                                        }`}>
+                                          {saveDeliveryAddress && <Check size={11} className="text-white" strokeWidth={3} />}
+                                        </div>
+                                      </div>
+                                      <span className="text-sm" style={{ color: "var(--text-60)" }}>Salvează adresa în cont</span>
+                                    </label>
+                                    {saveDeliveryAddress && (
+                                      <input
+                                        value={deliveryAddressLabel}
+                                        onChange={(e) => setDeliveryAddressLabel(e.target.value)}
+                                        placeholder="ex: Acasă, Birou..."
+                                        className="w-full px-4 py-2.5 rounded-xl text-sm input-dark bg-transparent text-[var(--text)]"
+                                      />
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </motion.div>
                       )}
@@ -908,6 +1194,12 @@ export default function CheckoutClient() {
                         </motion.div>
                       )}
                     </AnimatePresence>
+
+                    {submitError && (
+                      <div className="mt-4 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-sm text-red-400">
+                        {submitError}
+                      </div>
+                    )}
 
                     <div className="flex gap-3 mt-6">
                       <button type="button" onClick={() => setStep(2)}

@@ -47,6 +47,20 @@ export async function POST(req: NextRequest) {
     let userId: string | undefined;
     try { userId = verifyAuth(req).id; } catch { /* guest */ }
 
+    // Validare disponibilitate produse
+    const itemIds = (items as Array<{ id: string }>).map((i) => i.id);
+    const unavailable = await prisma.gogoasa.findMany({
+      where: { id: { in: itemIds }, available: false },
+      select: { name: true },
+    });
+    if (unavailable.length > 0) {
+      const names = unavailable.map((g) => g.name).join(", ");
+      return NextResponse.json(
+        { error: `Următoarele produse nu mai sunt disponibile: ${names}. Te rugăm să le elimini din coș.` },
+        { status: 400 }
+      );
+    }
+
     const orderNumber = await nextOrderNumber();
 
     await prisma.comanda.create({

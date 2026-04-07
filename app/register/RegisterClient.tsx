@@ -181,7 +181,7 @@ export default function RegisterClient() {
             </button>
           </form>
           <p className="mt-6 text-center text-xs text-[var(--text-30)]">
-            Prin înregistrare ești de acord cu <span className="underline cursor-pointer">Termenii și condițiile</span> noastre.
+            Prin înregistrare ești de acord cu <Link href="/termeni" className="underline hover:text-[#BC8157] transition-colors">Termenii și condițiile</Link> noastre.
           </p>
         </motion.div>
       </div>

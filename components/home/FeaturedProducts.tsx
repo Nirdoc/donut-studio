@@ -1,10 +1,32 @@
-import { products } from "@/lib/products";
+import { prisma } from "@/lib/db";
+import type { Product } from "@/lib/products";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-export default function FeaturedProducts() {
-  const featured = products.slice(0, 6);
+export default async function FeaturedProducts() {
+  const rows = await prisma.gogoasa.findMany({
+    orderBy: { createdAt: "asc" },
+    take: 6,
+  });
+
+  const featured: Product[] = rows.map((d) => ({
+    id: d.id,
+    name: d.name,
+    slug: d.slug,
+    price: d.price,
+    image: d.image,
+    description: d.description,
+    ingredients: d.ingredients,
+    allergens: d.allergens,
+    calories: d.calories,
+    available: d.available,
+    category: d.category as Product["category"],
+    nutrition: {
+      perServing: { kcal: d.kcalServing, fat: d.fatServing, carbs: d.carbsServing, protein: d.proteinServing },
+      per100g:    { kcal: d.kcal100g,    fat: d.fat100g,    carbs: d.carbs100g,    protein: d.protein100g },
+    },
+  }));
 
   return (
     <section className="section-mid py-24">

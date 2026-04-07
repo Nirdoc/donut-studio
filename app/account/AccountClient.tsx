@@ -23,7 +23,7 @@ const STATUS: Record<string, { label: string; dot: string; badge: string }> = {
   PENDING_PAYMENT: { label: "Anulată",       dot: "bg-red-400",    badge: "bg-red-400/15    text-red-400"   },
   PLATITA:         { label: "Plătită",       dot: "bg-teal-400",   badge: "bg-teal-400/15  text-teal-400"   },
   FINALIZAT:       { label: "Finalizat",     dot: "bg-green-400",  badge: "bg-green-400/15  text-green-400" },
-  ANULAT:          { label: "Anulat",        dot: "bg-red-400",    badge: "bg-red-400/15    text-red-400"   },
+  ANULAT:          { label: "Plată eșuată",  dot: "bg-red-400",    badge: "bg-red-400/15    text-red-400"   },
 };
 
 const PAGE_SIZE = 5;

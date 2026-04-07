@@ -10,7 +10,7 @@ import {
   UserCog, Mail, Lock, User as UserIcon, Cookie,
   ShoppingBag, FileText, MapPin, CreditCard, Banknote, Store,
   CalendarDays, Clock as ClockIcon, Download, BarChart2,
-  TrendingUp, PackageCheck, AlertCircle,
+  TrendingUp, PackageCheck,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store";
 
@@ -730,7 +730,7 @@ const statusBadgeConfig: Record<string, { label: string; cls: string }> = {
   PLATITA:    { label: "Plătită",      cls: "bg-teal-500/12 text-teal-600 border-teal-500/25" },
   PROCESSING: { label: "În procesare", cls: "bg-blue-500/12 text-blue-600 border-blue-500/25" },
   FINALIZAT:  { label: "Finalizat",    cls: "bg-green-500/12 text-green-600 border-green-500/25" },
-  ANULAT:     { label: "Anulat",       cls: "bg-red-500/12 text-red-500 border-red-500/25" },
+  ANULAT:     { label: "Plată eșuată", cls: "bg-red-500/12 text-red-500 border-red-500/25" },
 };
 
 const paymentLabel: Record<string, { label: string; Icon: React.ElementType }> = {
@@ -1175,7 +1175,7 @@ function HBar({ value, max, color = "#BC8157" }: { value: number; max: number; c
 
 const STATUS_LABELS: Record<string, string> = {
   PLATITA: "Plătită", PROCESSING: "În procesare",
-  FINALIZAT: "Finalizat", ANULAT: "Anulat",
+  FINALIZAT: "Finalizat", ANULAT: "Plată eșuată",
 };
 const STATUS_COLORS: Record<string, string> = {
   PLATITA: "#14b8a6", PROCESSING: "#3b82f6",
@@ -1301,7 +1301,7 @@ function DashboardTab({ token }: { token: string }) {
           { label: "Venit azi", value: fmtLeiCompact(kpis.todayRevenue), sub: `vs. ${fmtLeiCompact(kpis.yesterdayRevenue)} ieri`, color: "#BC8157", trend: { c: kpis.todayRevenue, p: kpis.yesterdayRevenue } },
           { label: "Venit săptămână", value: fmtLeiCompact(kpis.weekRevenue), sub: `vs. ${fmtLeiCompact(kpis.prevWeekRevenue)} prev.`, color: "#3b82f6", trend: { c: kpis.weekRevenue, p: kpis.prevWeekRevenue } },
           { label: "În așteptare", value: kpis.pendingOrders, sub: "necesită acțiune", color: "#f59e0b", trend: null },
-          { label: "Anulate luna", value: kpis.cancelledMonth, sub: "din luna aceasta", color: "#ef4444", trend: null },
+          { label: "Plăți eșuate", value: kpis.cancelledMonth, sub: "din luna aceasta", color: "#ef4444", trend: null },
           { label: "Total comenzi", value: kpis.allTimeOrders.toLocaleString("ro-RO"), sub: fmtLeiCompact(kpis.allTimeRevenue) + " total", color: "#22c55e", trend: null },
         ].map(({ label, value, sub, color, trend: tr }) => (
           <div key={label} className={`${card} px-4 py-3.5`}>

@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ro" className="h-full antialiased" suppressHydrationWarning>
+    <html lang="ro" className="h-full antialiased" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
         <link rel="icon" href="/logo.svg?v=3" type="image/svg+xml" />
         <link rel="icon" href="/icon.png?v=3" type="image/png" />

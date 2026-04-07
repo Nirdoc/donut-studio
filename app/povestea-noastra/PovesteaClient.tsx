@@ -102,6 +102,7 @@ export default function PovesteaClient() {
             src="/donuts/double-chocolate.webp"
             alt=""
             fill
+            sizes="50vw"
             className="object-cover object-center"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#14090a] to-transparent" />

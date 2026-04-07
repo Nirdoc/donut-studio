@@ -87,7 +87,7 @@ export default function EvenimenteClient() {
         <div className="absolute inset-0 grid grid-cols-4 grid-rows-2 gap-0 opacity-25">
           {donutImages.map((src, i) => (
             <div key={i} className="relative overflow-hidden">
-              <Image src={src} alt="" fill className="object-cover" />
+              <Image src={src} alt="" fill sizes="25vw" className="object-cover" />
             </div>
           ))}
         </div>
@@ -189,6 +189,7 @@ export default function EvenimenteClient() {
                   src={s.image}
                   alt={s.title}
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-cover group-hover:scale-110 transition-transform duration-700"
                 />
                 <div className={`absolute inset-0 bg-gradient-to-t ${s.color} opacity-80 group-hover:opacity-90 transition-opacity`} />

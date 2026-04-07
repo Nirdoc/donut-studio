@@ -90,7 +90,7 @@ export default function RegisterClient() {
         </div>
         <div className="absolute inset-0 opacity-10">
           <Image src="/donuts/pistachious.webp"
-            alt="" fill className="object-cover" />
+            alt="" fill sizes="50vw" className="object-cover" />
           <div className="absolute inset-0 bg-[#0d0502]/80" />
         </div>
         <div className="relative z-10 text-center">

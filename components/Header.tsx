@@ -64,8 +64,8 @@ export default function Header() {
             <Image
               src="/logo.svg"
               alt="Donut Studio"
-              width={160} height={80}
-              className="h-19 w-auto group-hover:scale-105 transition-transform"
+              width={74} height={38}
+              className="group-hover:scale-105 transition-transform"
               unoptimized
               loading="eager"
             />

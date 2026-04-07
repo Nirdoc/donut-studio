@@ -124,7 +124,7 @@ export default function HeroSection() {
               className="relative w-80 h-80"
             >
               {/* Main */}
-              <div className="w-full h-full rounded-full overflow-hidden shadow-2xl shadow-[#BC8157]/20 border-4 border-[#BC8157]/20 animate-float">
+              <div className="relative w-full h-full rounded-full overflow-hidden shadow-2xl shadow-[#BC8157]/20 border-4 border-[#BC8157]/20 animate-float">
                 <Image
                   src="/donuts/double-chocolate.webp"
                   alt="Double Chocolate"

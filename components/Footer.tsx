@@ -15,7 +15,7 @@ export default function Footer() {
                 alt="Donut Studio"
                 width={130}
                 height={65}
-                className="h-14 w-auto"
+                className=""
                 unoptimized
               />
             </div>

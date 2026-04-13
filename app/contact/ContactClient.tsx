@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   MapPin,
@@ -12,7 +12,9 @@ import {
   Globe,
   Share2,
   CheckCircle2,
+  ShieldCheck,
 } from "lucide-react";
+import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 const contactInfo = [
   {
@@ -60,7 +62,9 @@ const socials = [
   },
 ];
 
-export default function ContactClient() {
+// ── Inner page (uses reCAPTCHA hook) ────────────────────────────────────────
+function ContactPageInner() {
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -70,15 +74,20 @@ export default function ContactClient() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!executeRecaptcha) {
+      setError("reCAPTCHA nu s-a inițializat. Reîncarcă pagina.");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
+      const captchaToken = await executeRecaptcha("contact_form");
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, captchaToken }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -91,7 +100,7 @@ export default function ContactClient() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [executeRecaptcha, form]);
 
   return (
     <div className="min-h-screen">
@@ -276,23 +285,31 @@ export default function ContactClient() {
                     </div>
                   )}
 
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="inline-flex items-center gap-3 bg-[#BC8157] hover:bg-[#9a6540] text-white px-8 py-4 rounded-full font-semibold transition-all hover:shadow-xl hover:shadow-[#BC8157]/30 hover:-translate-y-0.5 disabled:opacity-60 disabled:pointer-events-none"
-                  >
-                    {loading ? (
-                      <>
-                        <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                        Se trimite...
-                      </>
-                    ) : (
-                      <>
-                        Trimite mesajul
-                        <Send size={16} />
-                      </>
-                    )}
-                  </button>
+                  <div className="flex items-center justify-between gap-4 flex-wrap">
+                    <button
+                      type="submit"
+                      disabled={loading || !executeRecaptcha}
+                      className="inline-flex items-center gap-3 bg-[#BC8157] hover:bg-[#9a6540] text-white px-8 py-4 rounded-full font-semibold transition-all hover:shadow-xl hover:shadow-[#BC8157]/30 hover:-translate-y-0.5 disabled:opacity-60 disabled:pointer-events-none"
+                    >
+                      {loading ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                          Se trimite...
+                        </>
+                      ) : (
+                        <>
+                          Trimite mesajul
+                          <Send size={16} />
+                        </>
+                      )}
+                    </button>
+
+                    {/* reCAPTCHA badge */}
+                    <span className="flex items-center gap-1.5 text-[10px] text-[var(--text-30)] select-none">
+                      <ShieldCheck size={12} className="text-[#BC8157]/50 shrink-0" />
+                      Protejat de reCAPTCHA
+                    </span>
+                  </div>
                 </form>
               )}
             </motion.div>
@@ -304,7 +321,7 @@ export default function ContactClient() {
               viewport={{ once: true }}
               className="lg:col-span-2 space-y-6"
             >
-              {/* Map placeholder */}
+              {/* Map */}
               <div className="card rounded-3xl overflow-hidden aspect-[4/3] relative">
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2848.3!2d26.0776639!3d44.4523718!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40b203fa98df641d%3A0xfbc237c77c774c18!2sDonut%20Studio!5e0!3m2!1sro!2sro!4v1"
@@ -393,6 +410,18 @@ export default function ContactClient() {
       </section>
 
     </div>
+  );
+}
+
+// ── Provider wrapper ─────────────────────────────────────────────────────────
+export default function ContactClient() {
+  return (
+    <GoogleReCaptchaProvider
+      reCaptchaKey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ?? ""}
+      scriptProps={{ async: true, defer: true }}
+    >
+      <ContactPageInner />
+    </GoogleReCaptchaProvider>
   );
 }
 

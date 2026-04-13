@@ -10,10 +10,30 @@ const subjectLabels: Record<string, string> = {
 };
 
 export async function POST(req: NextRequest) {
-  const { name, email, subject, message } = await req.json();
+  const { name, email, subject, message, captchaToken } = await req.json();
 
   if (!name || !email || !subject || !message) {
     return NextResponse.json({ error: "Câmpuri lipsă." }, { status: 400 });
+  }
+
+  // Verify reCAPTCHA token
+  if (!captchaToken) {
+    return NextResponse.json({ error: "Verificarea anti-spam a eșuat." }, { status: 400 });
+  }
+  const recaptchaRes = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      secret: process.env.RECAPTCHA_SECRET_KEY ?? "",
+      response: captchaToken,
+    }),
+  });
+  const recaptchaData = await recaptchaRes.json();
+  if (!recaptchaData.success || recaptchaData.score < 0.5) {
+    return NextResponse.json(
+      { error: "Mesajul a fost detectat ca spam. Încearcă din nou." },
+      { status: 400 },
+    );
   }
 
   const transporter = nodemailer.createTransport({

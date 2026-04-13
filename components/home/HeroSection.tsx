@@ -49,15 +49,15 @@ export default function HeroSection() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="font-display text-5xl sm:text-6xl lg:text-7xl text-white leading-none mb-6"
             >
-              Adaugă{" "}
+              Add{" "}
               <span className="text-[#BC8157] relative inline-block">
-                savoare
+                flavour
                 <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 8" fill="none">
                   <path d="M1 5.5C50 1.5 150 1.5 199 5.5" stroke="#BC8157" strokeWidth="2.5" strokeLinecap="round" />
                 </svg>
               </span>
               <br />
-              zilei tale
+              to your day
             </motion.h1>
 
             <motion.p

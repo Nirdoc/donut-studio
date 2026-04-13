@@ -96,7 +96,15 @@
       "WebFetch(domain:codul-postal.ro)",
       "WebFetch(domain:localitati.fandom.com)",
       "WebFetch(domain:familypedia.fandom.com)",
-      "WebFetch(domain:en.wiktionary.org)"
+      "WebFetch(domain:en.wiktionary.org)",
+      "Bash(curl -sL \"https://anpc.ro/wp-content/uploads/2022/08/ANPC-SAL.png\" -o /Users/codrin.ene/vsc/donut-studio/public/anpc-sal.png)",
+      "Bash(curl -sL \"https://ec.europa.eu/consumers/odr/main/img/ODR_logo.png\" -o /Users/codrin.ene/vsc/donut-studio/public/sol-odr.png)",
+      "Bash(curl -sL \"https://anpc.ro/\")",
+      "Bash(curl -sL \"https://anpc.ro/wp-content/uploads/2022/07/SAL-PICTOGRAMA.png\" -o /Users/codrin.ene/vsc/donut-studio/public/anpc-sal.png)",
+      "Bash(curl -sL \"https://ec.europa.eu/consumers/odr/main/img/ODR_logo_en.png\" -o /Users/codrin.ene/vsc/donut-studio/public/sol-odr.png)",
+      "Bash(curl -sL \"https://anpc.ro/wp-content/uploads/2023/01/SOL.png\" -o /tmp/sol-test.png)",
+      "Read(//tmp/**)",
+      "Bash(curl -sL \"https://anpc.ro/wp-content/uploads/2022/08/pictogramaSOL.png\" -o /Users/codrin.ene/vsc/donut-studio/public/sol-odr.png)"
     ]
   }
 }

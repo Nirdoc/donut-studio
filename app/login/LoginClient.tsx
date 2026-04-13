@@ -56,15 +56,9 @@ export default function LoginClient() {
           <div className="absolute inset-0 bg-black/80" />
         </div>
         <div className="relative z-10 text-center">
-          <Image
-            src="/logo.svg"
-            alt="Donut Studio" width={160} height={80}
-            className="h-20 w-auto mx-auto mb-10"
-            unoptimized
-          />
           <h2 className="font-display text-4xl mb-4 leading-tight" style={{ color: "var(--text)" }}>Bine ai revenit!</h2>
           <p className="max-w-xs mx-auto mb-10" style={{ color: "var(--text-60)" }}>
-            Autentifică-te pentru a-ți accesa contul și a comanda aromat.
+            Autentifică-te pentru a-ți accesa contul și a comanda.
           </p>
           <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
             {[

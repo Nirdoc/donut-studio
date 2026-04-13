@@ -163,15 +163,13 @@ export default function GalerieClient() {
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.25 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-[90vw] max-w-3xl aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border border-[#BC8157]/15"
+              className="rounded-2xl overflow-hidden shadow-2xl border border-[#BC8157]/15"
             >
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src={IMAGES[lightbox].src}
                 alt={IMAGES[lightbox].alt}
-                fill
-                sizes="90vw"
-                className="object-cover"
-                priority
+                className="block max-w-[90vw] max-h-[85vh] w-auto h-auto"
               />
             </motion.div>
           </motion.div>

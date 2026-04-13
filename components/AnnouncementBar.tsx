@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Phone, Mail } from "lucide-react";
 
 const MESSAGES = [
@@ -19,9 +18,18 @@ function WhatsAppIcon() {
 
 export default function AnnouncementBar({ visible }: { visible: boolean }) {
   const [index, setIndex] = useState(0);
+  const [show, setShow] = useState(true);
 
   useEffect(() => {
-    const id = setInterval(() => setIndex((i) => (i + 1) % MESSAGES.length), 4000);
+    const id = setInterval(() => {
+      setShow(false);
+      setTimeout(() => {
+        setIndex((i) => (i + 1) % MESSAGES.length);
+      }, 350);
+      setTimeout(() => {
+        setShow(true);
+      }, 400);
+    }, 4500);
     return () => clearInterval(id);
   }, []);
 
@@ -37,21 +45,20 @@ export default function AnnouncementBar({ visible }: { visible: boolean }) {
           borderBottom: "1px solid rgba(188,129,87,0.15)",
         }}
       >
-        {/* Center — rotating announcements (truly centered in the bar) */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={index}
-              initial={{ opacity: 0, y: 7 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -7 }}
-              transition={{ duration: 0.35 }}
-              className="text-[12px] font-semibold uppercase tracking-[0.22em] text-center whitespace-nowrap"
-              style={{ color: "rgba(188,129,87,0.55)" }}
+        {/* Center — rotating announcements */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+          {MESSAGES.map((msg, i) => (
+            <p
+              key={i}
+              className="absolute text-[12px] font-semibold uppercase tracking-[0.22em] text-center whitespace-nowrap transition-opacity duration-300"
+              style={{
+                color: "rgba(188,129,87,0.55)",
+                opacity: i === index ? (show ? 1 : 0) : 0,
+              }}
             >
-              {MESSAGES[index]}
-            </motion.p>
-          </AnimatePresence>
+              {msg}
+            </p>
+          ))}
         </div>
 
         {/* Right — contact chips */}

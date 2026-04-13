@@ -10,7 +10,7 @@ import {
   UserCog, Mail, Lock, User as UserIcon, Cookie,
   ShoppingBag, FileText, MapPin, CreditCard, Banknote, Store,
   CalendarDays, Clock as ClockIcon, Download, BarChart2,
-  TrendingUp, PackageCheck,
+  TrendingUp, PackageCheck, Ban, AlertTriangle, ChevronRight,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store";
 
@@ -1522,8 +1522,351 @@ function DashboardTab({ token }: { token: string }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN SHELL
 // ═══════════════════════════════════════════════════════════════════════════════
+// SLOTS TAB
+// ═══════════════════════════════════════════════════════════════════════════════
 
-type Tab = "dashboard" | "users" | "donuts" | "comenzi" | "facturi";
+const SLOT_LABELS = [
+  "08:00 – 10:00",
+  "10:00 – 12:00",
+  "12:00 – 14:00",
+  "14:00 – 16:00",
+  "16:00 – 18:00",
+  "18:00 – 20:00",
+  "20:00 – 22:00",
+];
+
+const MONTHS_RO = ["Ianuarie","Februarie","Martie","Aprilie","Mai","Iunie","Iulie","August","Septembrie","Octombrie","Noiembrie","Decembrie"];
+const DAYS_RO   = ["Lu","Ma","Mi","Jo","Vi","Sâ","Du"];
+
+function SlotCalendar({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const today = new Date();
+  const todayISO = today.toISOString().split("T")[0];
+  const [view, setView] = useState({ year: today.getFullYear(), month: today.getMonth() });
+
+  const daysInMonth = new Date(view.year, view.month + 1, 0).getDate();
+  const firstDow    = (new Date(view.year, view.month, 1).getDay() + 6) % 7;
+
+  const toISO = (d: number) =>
+    `${view.year}-${String(view.month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+
+  const prevMonth = () => setView(v => v.month === 0 ? { year: v.year - 1, month: 11 } : { ...v, month: v.month - 1 });
+  const nextMonth = () => setView(v => v.month === 11 ? { year: v.year + 1, month: 0 } : { ...v, month: v.month + 1 });
+
+  return (
+    <div className="rounded-2xl border overflow-hidden w-full max-w-xs" style={{ borderColor: "var(--border)", background: "var(--card-bg, var(--bg))" }}>
+      <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "var(--border)" }}>
+        <button type="button" onClick={prevMonth} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-[#BC8157]/10 transition-colors" style={{ color: "var(--text-40)" }}>
+          <ChevronLeft size={16} />
+        </button>
+        <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>{MONTHS_RO[view.month]} {view.year}</span>
+        <button type="button" onClick={nextMonth} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-[#BC8157]/10 transition-colors" style={{ color: "var(--text-40)" }}>
+          <ChevronRight size={16} />
+        </button>
+      </div>
+      <div className="p-3">
+        <div className="grid grid-cols-7 mb-1">
+          {DAYS_RO.map(d => <div key={d} className="text-center text-[11px] font-semibold py-1" style={{ color: "var(--text-30)" }}>{d}</div>)}
+        </div>
+        <div className="grid grid-cols-7 gap-y-0.5">
+          {Array.from({ length: firstDow }).map((_, i) => <div key={`e-${i}`} />)}
+          {Array.from({ length: daysInMonth }).map((_, i) => {
+            const d   = i + 1;
+            const iso = toISO(d);
+            const sel = iso === value;
+            const past = iso < todayISO;
+            return (
+              <button key={d} type="button" disabled={past} onClick={() => onChange(iso)}
+                className={`mx-auto flex items-center justify-center w-8 h-8 rounded-xl text-sm font-medium transition-all
+                  ${sel ? "text-white shadow-lg" : ""}
+                  ${!sel && !past ? "hover:bg-[#BC8157]/15" : ""}
+                  ${past ? "opacity-20 cursor-not-allowed" : "cursor-pointer"}
+                `}
+                style={sel ? { background: "#BC8157" } : { color: past ? "var(--text-30)" : "var(--text)" }}>
+                {d}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface SlotInfo {
+  label: string;
+  blockedId: string | null;
+  orders: Array<{ orderNumber: string; firstName: string; lastName: string }>;
+  orderCount: number;
+  isFull: boolean;
+}
+
+function SlotsTab({ token }: { token: string }) {
+  const today = new Date().toISOString().split("T")[0];
+  const [selectedDate, setSelectedDate] = useState(today);
+  const [slotData, setSlotData] = useState<SlotInfo[]>([]);
+  const [maxCapacity, setMaxCapacity] = useState(3);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+
+  // Confirmation dialog
+  const [confirmSlot, setConfirmSlot] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+
+  // Warning dialog (orders exist — can't block)
+  const [warnOpen, setWarnOpen] = useState(false);
+  const [warnInfo, setWarnInfo] = useState<SlotInfo | null>(null);
+
+  // Per-row loading
+  const [unblockingId, setUnblockingId] = useState<string | null>(null);
+
+  const fetchSlots = useCallback(async (date: string) => {
+    setLoadingSlots(true);
+    try {
+      const res = await fetch(`/api/admin/blocked-slots?date=${date}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setSlotData(Array.isArray(data.slots) ? data.slots : []);
+      if (data.maxCapacity) setMaxCapacity(data.maxCapacity);
+    } finally {
+      setLoadingSlots(false);
+    }
+  }, [token]);
+
+  useEffect(() => { fetchSlots(selectedDate); }, [selectedDate, fetchSlots]);
+
+  const handleDateChange = (date: string) => {
+    setSelectedDate(date);
+    setConfirmOpen(false);
+    setWarnOpen(false);
+  };
+
+  // Click "Blochează": check orders locally (already fetched), no extra API call needed
+  const handleBlockClick = (info: SlotInfo) => {
+    if (info.orderCount > 0) {
+      setWarnInfo(info);
+      setWarnOpen(true);
+      return;
+    }
+    setConfirmSlot(info.label);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirm = async () => {
+    if (!confirmSlot) return;
+    setConfirming(true);
+    try {
+      await fetch("/api/admin/blocked-slots", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ date: selectedDate, timeSlot: confirmSlot }),
+      });
+      setConfirmOpen(false);
+      setConfirmSlot(null);
+      fetchSlots(selectedDate);
+    } finally {
+      setConfirming(false);
+    }
+  };
+
+  const handleUnblock = async (id: string) => {
+    setUnblockingId(id);
+    try {
+      await fetch(`/api/admin/blocked-slots/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchSlots(selectedDate);
+    } finally {
+      setUnblockingId(null);
+    }
+  };
+
+  const fmtDate = (iso: string) =>
+    new Date(iso + "T12:00:00").toLocaleDateString("ro-RO", { day: "numeric", month: "long", year: "numeric" });
+
+  return (
+    <>
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Calendar */}
+        <div className="flex-shrink-0">
+          <p className="text-xs font-medium mb-3 uppercase tracking-wider" style={{ color: "var(--text-40)" }}>
+            Selectează data
+          </p>
+          <SlotCalendar value={selectedDate} onChange={handleDateChange} />
+          <p className="text-sm font-semibold mt-3" style={{ color: "var(--text)" }}>
+            {fmtDate(selectedDate)}
+          </p>
+        </div>
+
+        {/* Slots list */}
+        <div className="flex-1">
+          <p className="text-xs font-medium mb-3 uppercase tracking-wider" style={{ color: "var(--text-40)" }}>
+            Intervale orare
+          </p>
+
+          {loadingSlots ? (
+            <div className="flex items-center gap-2 py-8" style={{ color: "var(--text-40)" }}>
+              <Loader2 size={16} className="animate-spin" />
+              <span className="text-sm">Se încarcă…</span>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {slotData.map((info) => {
+                const isBlocked    = !!info.blockedId;
+                const isUnblocking = unblockingId === info.blockedId;
+
+                // Border & background color by state
+                let borderColor = "var(--border)";
+                let bgColor     = "var(--surface)";
+                if (isBlocked)   { borderColor = "rgba(239,68,68,0.25)";  bgColor = "rgba(239,68,68,0.06)"; }
+                else if (info.isFull) { borderColor = "rgba(234,179,8,0.3)"; bgColor = "rgba(234,179,8,0.05)"; }
+
+                return (
+                  <div key={info.label}
+                    className="flex items-center justify-between gap-4 px-4 py-3 rounded-2xl border transition-colors"
+                    style={{ borderColor, background: bgColor }}>
+
+                    {/* Left: icon + label + badges + order count */}
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <ClockIcon size={15}
+                        className={isBlocked ? "text-red-400" : info.isFull ? "text-yellow-500" : "text-[#BC8157]"} />
+
+                      <span className="text-sm font-medium" style={{ color: "var(--text)" }}>
+                        {info.label}
+                      </span>
+
+                      {/* State badge */}
+                      {isBlocked && (
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-500/15 text-red-500 border border-red-500/20">
+                          Blocat
+                        </span>
+                      )}
+                      {!isBlocked && info.isFull && (
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-600 border border-yellow-500/25">
+                          Plin
+                        </span>
+                      )}
+
+                      {/* Order count pill */}
+                      <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${
+                        info.isFull
+                          ? "bg-yellow-500/10 text-yellow-600 border-yellow-500/20"
+                          : info.orderCount > 0
+                            ? "bg-[#BC8157]/10 text-[#BC8157] border-[#BC8157]/20"
+                            : "border-[var(--border)]"
+                      }`}
+                        style={info.orderCount === 0 ? { color: "var(--text-30)" } : undefined}>
+                        {info.orderCount} / {maxCapacity} comenzi
+                      </span>
+                    </div>
+
+                    {/* Right: action button */}
+                    {isBlocked ? (
+                      <button
+                        onClick={() => handleUnblock(info.blockedId!)}
+                        disabled={isUnblocking}
+                        className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border border-red-500/25 text-red-500 hover:bg-red-500/10 disabled:opacity-50 transition-colors">
+                        {isUnblocking ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
+                        Deblochează
+                      </button>
+                    ) : info.isFull ? (
+                      <span className="flex-shrink-0 text-[11px] font-medium px-3 py-1.5 rounded-xl"
+                        style={{ color: "var(--text-30)", background: "var(--surface)" }}>
+                        Capacitate maximă atinsă
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => handleBlockClick(info)}
+                        className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors"
+                        style={{ borderColor: "var(--border)", color: "var(--text-50)", background: "var(--card-bg, var(--bg))" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = "#BC8157"; e.currentTarget.style.color = "#BC8157"; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text-50)"; }}>
+                        <Ban size={12} /> Blochează
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Confirmation dialog */}
+      <Dialog.Root open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <ModalOverlay>
+          <div className="p-7 text-center">
+            <div className="w-14 h-14 rounded-3xl bg-[#BC8157]/15 border border-[#BC8157]/25 flex items-center justify-center mx-auto mb-5">
+              <Ban size={22} className="text-[#BC8157]" />
+            </div>
+            <Dialog.Title className="text-lg font-semibold mb-1" style={{ color: "var(--text)" }}>
+              Blochează intervalul?
+            </Dialog.Title>
+            <p className="text-sm font-medium mb-1" style={{ color: "var(--text)" }}>{confirmSlot}</p>
+            <p className="text-xs mb-6" style={{ color: "var(--text-40)" }}>{fmtDate(selectedDate)}</p>
+            <p className="text-sm mb-6" style={{ color: "var(--text-60)" }}>
+              Clienții nu vor mai putea plasa comenzi pentru acest interval. Ești sigur?
+            </p>
+            <div className="flex gap-3">
+              <Dialog.Close className="flex-1 py-3 rounded-xl text-sm font-medium border transition-colors"
+                style={{ color: "var(--text-50)", borderColor: "var(--border)" }}>
+                Anulează
+              </Dialog.Close>
+              <button onClick={handleConfirm} disabled={confirming}
+                className="flex-1 py-3 rounded-xl text-sm font-semibold bg-[#BC8157] hover:bg-[#9a6540] disabled:opacity-60 text-white transition-colors flex items-center justify-center gap-2">
+                {confirming && <Loader2 size={14} className="animate-spin" />}
+                Da, blochează
+              </button>
+            </div>
+          </div>
+        </ModalOverlay>
+      </Dialog.Root>
+
+      {/* Warning dialog — orders exist, can't block */}
+      <Dialog.Root open={warnOpen} onOpenChange={setWarnOpen}>
+        <ModalOverlay>
+          <div className="p-7">
+            <div className="w-14 h-14 rounded-3xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center mx-auto mb-5">
+              <AlertTriangle size={22} className="text-amber-500" />
+            </div>
+            <Dialog.Title className="text-lg font-semibold mb-1 text-center" style={{ color: "var(--text)" }}>
+              Nu se poate bloca
+            </Dialog.Title>
+            <p className="text-sm text-center mb-4" style={{ color: "var(--text-50)" }}>
+              Există deja{" "}
+              <strong style={{ color: "var(--text)" }}>
+                {warnInfo?.orderCount} {warnInfo?.orderCount === 1 ? "comandă plasată" : "comenzi plasate"}
+              </strong>{" "}
+              pentru <strong style={{ color: "var(--text)" }}>{warnInfo?.label}</strong> din{" "}
+              {fmtDate(selectedDate)}:
+            </p>
+            <div className="space-y-2 mb-6 max-h-48 overflow-y-auto">
+              {(warnInfo?.orders ?? []).map((o) => (
+                <div key={o.orderNumber} className="flex items-center justify-between px-3 py-2 rounded-xl border"
+                  style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+                  <span className="font-mono text-xs font-semibold" style={{ color: "var(--text)" }}>
+                    {o.orderNumber}
+                  </span>
+                  <span className="text-xs" style={{ color: "var(--text-50)" }}>
+                    {o.firstName} {o.lastName}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <Dialog.Close className="w-full py-3 rounded-xl text-sm font-semibold bg-[#BC8157] hover:bg-[#9a6540] text-white transition-colors">
+              Am înțeles
+            </Dialog.Close>
+          </div>
+        </ModalOverlay>
+      </Dialog.Root>
+    </>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+
+type Tab = "dashboard" | "users" | "donuts" | "comenzi" | "facturi" | "slots";
 
 export default function AdminClient() {
   const router = useRouter();
@@ -1571,6 +1914,7 @@ export default function AdminClient() {
             { id: "donuts"    as Tab, icon: Cookie,       label: "Gogoși" },
             { id: "comenzi"   as Tab, icon: ShoppingBag,  label: "Comenzi" },
             { id: "facturi"   as Tab, icon: FileText,     label: "Facturi" },
+            { id: "slots"     as Tab, icon: Ban,          label: "Intervale" },
           ]).map(({ id, icon: Icon, label }) => (
             <button key={id} onClick={() => setTab(id)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all"
@@ -1587,6 +1931,7 @@ export default function AdminClient() {
           {tab === "donuts"    && <DonutsTab    token={token ?? ""} />}
           {tab === "comenzi"   && <ComenziTab   token={token ?? ""} />}
           {tab === "facturi"   && <FacturiTab   token={token ?? ""} />}
+          {tab === "slots"     && <SlotsTab     token={token ?? ""} />}
         </motion.div>
       </div>
     </div>

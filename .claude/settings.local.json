@@ -85,7 +85,18 @@
       "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_lBcoMJeUb54Y@ep-hidden-unit-an1gu9aa-pooler.c-6.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=verify-full\" npx tsx:*)",
       "Bash(chmod +x /tmp/check_unused.sh)",
       "Bash(chmod +x /tmp/find_unused_components.sh)",
-      "Bash(bash /tmp/find_unused_components.sh)"
+      "Bash(bash /tmp/find_unused_components.sh)",
+      "Bash(open:*)",
+      "WebSearch",
+      "WebFetch(domain:en.wikipedia.org)",
+      "WebFetch(domain:ro.wikipedia.org)",
+      "WebFetch(domain:www.citypopulation.de)",
+      "WebFetch(domain:www.bucuresteni.ro)",
+      "WebFetch(domain:uat.firme-on-line.ro)",
+      "WebFetch(domain:codul-postal.ro)",
+      "WebFetch(domain:localitati.fandom.com)",
+      "WebFetch(domain:familypedia.fandom.com)",
+      "WebFetch(domain:en.wiktionary.org)"
     ]
   }
 }

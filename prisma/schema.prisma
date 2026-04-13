@@ -164,6 +164,15 @@ model Factura {
   updatedAt     DateTime @updatedAt
 }
 
+model BlockedSlot {
+  id        String   @id @default(cuid())
+  date      String   // "2026-04-14"
+  timeSlot  String   // "10:00 – 12:00"
+  createdAt DateTime @default(now())
+
+  @@unique([date, timeSlot])
+}
+
 model VerificationToken {
   id        String   @id @default(cuid())
   token     String   @unique

@@ -122,6 +122,20 @@ function todayISO() {
   return new Date().toISOString().split("T")[0];
 }
 
+/**
+ * Minimum selectable delivery date:
+ * - Today is never available (no same-day orders).
+ * - Tomorrow is available only if the current time is before 20:00.
+ * - Any date 2+ days in the future is always available.
+ */
+function minDeliveryDate(): string {
+  const now = new Date();
+  const daysToAdd = now.getHours() >= 20 ? 2 : 1;
+  const d = new Date(now);
+  d.setDate(d.getDate() + daysToAdd);
+  return d.toISOString().split("T")[0];
+}
+
 type AddressState = {
   judet: string;
   city: string;
@@ -159,12 +173,53 @@ type SavedAddress = AddressState & { id: string; label: string; addrType: string
 const SECTORS = ["Sector 1", "Sector 2", "Sector 3", "Sector 4", "Sector 5", "Sector 6"];
 
 const ILFOV_LOCALITIES = [
-  "Afumați", "Balotești", "Berceni", "Bragadiru", "Brănești", "Buftea",
-  "Cernica", "Chitila", "Ciolpani", "Clinceni", "Corbeanca", "Cornetu",
-  "Dărăști-Ilfov", "Domneşti", "Dragomireşti-Vale", "Găneasa", "Glina",
-  "Grădiştea", "Gruiu", "Jilava", "Măgurele", "Moara Vlăsiei", "Nuci",
-  "Otopeni", "Pantelimon", "Petrăchioaia", "Popeşti-Leordeni", "Snagov",
-  "Ştefăneştii de Jos", "Tunari", "Vidra", "Voluntari",
+  // 1
+  "1 Decembrie",
+  // A
+  "Afumați", "Alunișu",
+  // B
+  "Bălăceanca", "Balotești", "Balta Neagră", "Bălteni", "Berceni", "Bragadiru", "Brănești",
+  "Buda", "Buciumeni", "Buriaș",
+  // C
+  "Căciulați", "Căldăraru", "Cățelu", "Cernica", "Chiajna", "Chitila", "Ciolpani", "Ciofliceni",
+  "Ciorogârla", "Clinceni", "Copăceni", "Corbeanca", "Cornetu", "Cozieni", "Creața",
+  "Crețești", "Crețuleasca",
+  // D
+  "Dascălu", "Dărăști-Ilfov", "Dârvari", "Dimieni", "Dobroești", "Domnești",
+  "Dragomirești-Deal", "Dragomirești-Vale", "Dumbrăveni", "Dumitrana", "Dudu",
+  // F
+  "Fundeni",
+  // G
+  "Gagu", "Găneasa", "Ghermănești", "Glina", "Grădiștea", "Gruiu",
+  // I
+  "Islaz", "Izvorani",
+  // J
+  "Jilava",
+  // L
+  "Lipia", "Lupăria",
+  // M
+  "Măgurele", "Măineasca", "Manolache", "Mănoiu", "Marii Petchii", "Micșuneștii Mari",
+  "Micșuneștii-Moară", "Moara Domnească", "Moara Vlăsiei", "Mogoșoaia",
+  // N
+  "Nuci",
+  // O
+  "Odăile", "Olteni", "Ordoreanu", "Ostratu", "Otopeni",
+  // P
+  "Pantelimon", "Pasărea", "Periș", "Petrăchioaia", "Petrești", "Piscu", "Piteasca",
+  "Popești-Leordeni", "Poșta", "Pruni",
+  // R
+  "Roșu", "Rudeni", "Runcu",
+  // S
+  "Săftica", "Șanțu-Florești", "Șindrilița", "Sitaru", "Siliștea Snagovului", "Snagov",
+  "Surlari",
+  // Ș
+  "Ștefăneștii de Jos", "Ștefăneștii de Sus",
+  // T
+  "Tamași", "Tânganu", "Tâncăbești", "Țegheș", "Tunari",
+  // V
+  "Vadu Anei", "Vânători", "Vârteju", "Vidra", "Vlădiceasca", "Voluntari",
+  // Z
+  "Zurbaua",
 ];
 
 // ── Reusable address block ───────────────────────────────────────────────────
@@ -236,7 +291,7 @@ function AddressFields({
               onChange={(e) => set("judet", e.target.value)}
               className={sel("judet")}
             >
-              <option value="">— Selectează sectorul —</option>
+              <option value="">— Selectează —</option>
               {SECTORS.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
             <FieldError msg={errors.judet} />
@@ -247,14 +302,14 @@ function AddressFields({
         {zone === "Ilfov" && (
           <div>
             <label className={lbl} style={{ color: "var(--label-text)" }}>
-              Localitate {required && <span className="text-red-400">*</span>}
+              Localitate/Sat {required && <span className="text-red-400">*</span>}
             </label>
             <select
               value={value.city}
               onChange={(e) => set("city", e.target.value)}
               className={sel("city")}
             >
-              <option value="">— Selectează localitatea —</option>
+              <option value="">— Selectează —</option>
               {ILFOV_LOCALITIES.map((l) => <option key={l} value={l}>{l}</option>)}
             </select>
             <FieldError msg={errors.city} />
@@ -409,6 +464,7 @@ export default function CheckoutClient() {
   // Step 1
   const [deliveryDate, setDeliveryDate] = useState("");
   const [deliveryTime, setDeliveryTime] = useState("");
+  const [blockedSlots, setBlockedSlots] = useState<string[]>([]);
 
   // Step 2 — contact
   const [contact, setContact] = useState({
@@ -471,14 +527,10 @@ export default function CheckoutClient() {
   const fee = paymentMethod === "pickup" ? 0 : calcDeliveryFee(activeAddr);
   const grandTotal = totalPrice() + fee;
 
-  const availableSlots = useMemo(() => {
-    if (!deliveryDate) return TIME_SLOTS;
-    if (deliveryDate === todayISO()) {
-      const nowHour = new Date().getHours();
-      return TIME_SLOTS.filter((s) => s.startHour > nowHour);
-    }
-    return TIME_SLOTS;
-  }, [deliveryDate]);
+  const availableSlots = useMemo(
+    () => TIME_SLOTS.filter((s) => !blockedSlots.includes(s.label)),
+    [blockedSlots]
+  );
 
   // Pickup requires delivery date at least 24h in the future
   const pickupAllowed = useMemo(() => {
@@ -507,6 +559,11 @@ export default function CheckoutClient() {
   const handleDateChange = (val: string) => {
     setDeliveryDate(val);
     setDeliveryTime("");
+    setBlockedSlots([]);
+    fetch(`/api/blocked-slots?date=${val}`)
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => setBlockedSlots(Array.isArray(data) ? data : []))
+      .catch(() => {});
   };
 
   const getToken = () => {
@@ -715,7 +772,7 @@ export default function CheckoutClient() {
                       </label>
                       <DatePicker
                         value={deliveryDate}
-                        min={todayISO()}
+                        min={minDeliveryDate()}
                         onChange={handleDateChange}
                       />
                     </div>

@@ -96,7 +96,7 @@ function DatePicker({ value, min, onChange }: { value: string; min: string; onCh
 }
 
 type Step = 1 | 2 | 3;
-type PaymentMethod = "cash" | "card" | "pickup";
+type PaymentMethod = "cash" | "card";
 type DwellingType = "casa" | "bloc";
 
 const TIME_SLOTS = [
@@ -533,13 +533,6 @@ export default function CheckoutClient() {
     [blockedSlots]
   );
 
-  // Pickup requires delivery date at least 24h in the future
-  const pickupAllowed = useMemo(() => {
-    if (!deliveryDate) return false;
-    const deliveryMidnight = new Date(deliveryDate + "T00:00:00").getTime();
-    return deliveryMidnight - Date.now() >= 24 * 60 * 60 * 1000;
-  }, [deliveryDate]);
-
   // Fetch adrese salvate (doar utilizatori autentificați)
   useEffect(() => {
     if (!user) return;
@@ -549,13 +542,6 @@ export default function CheckoutClient() {
       .then((data) => setSavedAddresses(Array.isArray(data) ? data : []))
       .catch(() => {});
   }, [user]);
-
-  // Reset payment method if pickup is selected but delivery date no longer qualifies
-  useEffect(() => {
-    if (!pickupAllowed && paymentMethod === "pickup") {
-      setPaymentMethod("cash");
-    }
-  }, [pickupAllowed, paymentMethod]);
 
   // When store pickup is selected, force card payment
   useEffect(() => {
@@ -1224,7 +1210,7 @@ export default function CheckoutClient() {
                       </div>
                       <div>
                         <h2 className="font-semibold text-lg text-[var(--text)]">Metodă de plată</h2>
-                        <p className="text-xs" style={{ color: "var(--text-40)" }}>Alege cum dorești să plătești sau ridici comanda</p>
+                        <p className="text-xs" style={{ color: "var(--text-40)" }}>Alege metoda de plată preferată</p>
                       </div>
                       <div className="ml-auto flex items-center gap-1 text-xs" style={{ color: "var(--text-35)" }}>
                         <Lock size={12} /> Securizat
@@ -1235,9 +1221,8 @@ export default function CheckoutClient() {
                       {(storePickup ? [
                         { id: "card" as PaymentMethod, icon: CreditCard, title: "Plată cu cardul", desc: "Fără taxă de livrare · Ridicare din magazin", disabled: false },
                       ] : [
-                        { id: "cash"   as PaymentMethod, icon: Banknote,   title: "Numerar la livrare",   desc: `Taxa de livrare: ${fee} lei`,                   disabled: false },
-                        { id: "card"   as PaymentMethod, icon: CreditCard, title: "Plată cu cardul",      desc: `Taxa de livrare: ${fee} lei`,                   disabled: false },
-                        { id: "pickup" as PaymentMethod, icon: Store,       title: "Ridicare din magazin", desc: "Fără taxă de livrare · Piața Victoriei, București",      disabled: !pickupAllowed },
+                        { id: "cash" as PaymentMethod, icon: Banknote,   title: "Numerar la livrare", desc: `Taxa de livrare: ${fee} lei`, disabled: false },
+                        { id: "card" as PaymentMethod, icon: CreditCard, title: "Plată cu cardul",    desc: `Taxa de livrare: ${fee} lei`, disabled: false },
                       ]).map((opt) => {
                         const selected = paymentMethod === opt.id;
                         return (

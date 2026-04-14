@@ -115,63 +115,31 @@ export default function HeroSection() {
             </motion.div>
           </div>
 
-          {/* ── Floating donuts visual ── */}
-          <div className="relative hidden lg:flex items-center justify-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.9, delay: 0.2 }}
-              className="relative w-80 h-80"
-            >
-              {/* Main */}
-              <div className="relative w-full h-full rounded-full overflow-hidden shadow-2xl shadow-[#BC8157]/20 border-4 border-[#BC8157]/20 animate-float">
-                <Image
-                  src="/donuts/double-chocolate.webp"
-                  alt="Double Chocolate"
-                  fill
-                  sizes="(max-width: 1024px) 0px, 320px"
-                  className="object-cover"
-                  priority
-                  loading="eager"
-                />
-              </div>
+          {/* ── Video hero ── */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
+            className="relative hidden lg:block"
+          >
+            {/* Glow ambiant */}
+            <div className="absolute -inset-8 rounded-[2.5rem] blur-3xl opacity-35 pointer-events-none"
+              style={{ background: "radial-gradient(ellipse, rgba(188,129,87,0.55) 0%, transparent 70%)" }} />
 
-              {/* Floating pill — top left */}
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.7 }}
-                className="absolute -top-4 -left-16 bg-[var(--surface-mid)] backdrop-blur-md border border-[var(--border)] rounded-2xl p-3 flex items-center gap-3 shadow-xl"
-              >
-                <div className="w-10 h-10 rounded-xl overflow-hidden">
-                  <Image src="/donuts/raspberry-blast.webp" alt="Raspberry Blast" width={40} height={40} className="object-cover w-full h-full" />
-                </div>
-                <div>
-                  <p className="font-semibold text-xs text-[var(--text)]">Raspberry Blast</p>
-                  <p className="text-[#BC8157] font-bold text-sm">12 lei</p>
-                </div>
-              </motion.div>
-
-              {/* Floating pill — bottom right */}
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.9 }}
-                className="absolute -bottom-4 -right-10 bg-[var(--surface-mid)] backdrop-blur-md border border-[var(--border)] rounded-2xl p-3 flex items-center gap-3 shadow-xl"
-              >
-                <div className="w-10 h-10 rounded-xl overflow-hidden">
-                  <Image src="/donuts/pistachious.webp" alt="Pistachious" width={40} height={40} className="object-cover w-full h-full" />
-                </div>
-                <div>
-                  <p className="font-semibold text-xs text-[var(--text)]">Pistachious</p>
-                  <p className="text-[#BC8157] font-bold text-sm">12 lei</p>
-                </div>
-              </motion.div>
-
-              {/* Pulsing dot */}
-              <div className="absolute -right-3 top-1/2 w-4 h-4 rounded-full bg-[#BC8157]/60 animate-ping" />
-            </motion.div>
-          </div>
+            {/* Video */}
+            <div className="relative rounded-[2rem] overflow-hidden border border-[#BC8157]/20 shadow-2xl shadow-[#BC8157]/20">
+              <video
+                src="/hero.mp4"
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-full object-cover block"
+              />
+              <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#080300]/60 to-transparent pointer-events-none" />
+              <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white/4 to-transparent pointer-events-none" />
+            </div>
+          </motion.div>
 
         </div>
       </div>

@@ -107,7 +107,8 @@
       "Bash(curl -sL \"https://anpc.ro/wp-content/uploads/2022/08/pictogramaSOL.png\" -o /Users/codrin.ene/vsc/donut-studio/public/sol-odr.png)",
       "Bash(curl -L \"https://netopia-payments.com/wp-content/uploads/2022/07/netopia-payments-logo.svg\" -o /Users/codrin.ene/vsc/donut-studio/public/netopia.svg)",
       "Bash(curl -s \"https://netopia-payments.com\")",
-      "Bash(curl -L \"https://netopia-payments.com/core/assets/5993428bab/images/logo.svg\" -o /Users/codrin.ene/vsc/donut-studio/public/netopia.svg)"
+      "Bash(curl -L \"https://netopia-payments.com/core/assets/5993428bab/images/logo.svg\" -o /Users/codrin.ene/vsc/donut-studio/public/netopia.svg)",
+      "Bash(curl -s \"https://www.donutstudio.ro/politica-de-retur/\")"
     ]
   }
 }

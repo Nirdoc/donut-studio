@@ -9,22 +9,22 @@ const items = [
   {
     icon: Clock,
     title: "Plasare comenzi",
-    text: "Comenzile se plasează cu cel puțin o zi înaintea livrării — prin coșul de pe website, la 0745.018.888 (inclusiv WhatsApp) sau pe contact@donutstudio.ro.",
+    text: "Comenzile se plasează cu cel puțin o zi înaintea livrării — prin coșul de pe website, la 0745.018.888 (inclusiv WhatsApp) sau pe email contact@donutstudio.ro.",
   },
   {
     icon: Truck,
     title: "Program livrări",
-    text: "Livrăm de Luni până Duminică, în intervalul 08:00 – 22:00. Transportul este gratuit pentru București și județul Ilfov.",
+    text: "Livrările se fac de Luni până Duminică în intervalul orar 8:00 – 20:00, iar taxa de livrare este 25 lei pentru sectorele 1, 2, 6 și 35 lei pentru sectorele 3, 4, 5 și județul Ilfov.",
   },
   {
     icon: Package,
     title: "Comandă minimă",
-    text: "Comanda minimă este de 8 bucăți pentru București și 16 bucăți pentru județul Ilfov.",
+    text: "Comanda minimă este de 16 bucăți pentru București și pentru județul Ilfov.",
   },
   {
     icon: MapPin,
     title: "Livrări în provincie",
-    text: "Pentru evenimente în afara Bucureștiului, livrăm în limita a 250 km. Costul transportului variază în funcție de distanță și va fi comunicat în prealabil.",
+    text: "Pentru evenimente în provincie, livrările se fac în limita a 250 km și în funcție de cantitatea comandată. Costul transportului va varia în funcție de distanță și urmează să vă fie comunicat în prealabil.",
   },
 ];
 
@@ -69,17 +69,22 @@ export default function PoliticaDeLivrare() {
           <div className="card rounded-3xl p-8 space-y-5 text-sm leading-relaxed" style={{ color: "var(--text-70)" }}>
             <h2 className="font-display text-2xl mb-2">Detalii complete</h2>
 
-            <p><strong style={{ color: "var(--text)" }}>1.1</strong> Comenzile se plasează cu cel puțin o zi înaintea livrării folosind una din următoarele variante: prin adăugarea produselor dorite în coșul de cumpărături și urmând instrucțiunile de pe website, la numărul de telefon 0745.018.888 sau prin WhatsApp, pe email contact@donutstudio.ro.</p>
+            <p>Comenzile se plasează cu cel puțin o zi înaintea livrării folosind una din următoarele variante:</p>
+            <ul className="space-y-1 pl-4">
+              <li>– prin adăugarea produselor dorite în coșul de cumpărături și urmând instrucțiunile din secțiunea de pe website dedicată acestui subiect</li>
+              <li>– la numărul de telefon 0745.018.888 sau prin intermediul aplicației mobile WhatsApp</li>
+              <li>– pe email contact@donutstudio.ro</li>
+            </ul>
 
-            <p><strong style={{ color: "var(--text)" }}>1.2</strong> Livrările se fac de Luni până Duminică în intervalul orar 8:00 – 22:00, iar costul transportului este gratuit pentru București și județul Ilfov.</p>
+            <p>Livrările se fac de Luni până Duminică în intervalul orar 8:00 – 20:00, iar taxa de livrare este 25 lei pentru sectorele 1, 2, 6 și 35 lei pentru sectorele 3, 4, 5 și județul Ilfov.</p>
 
-            <p><strong style={{ color: "var(--text)" }}>1.3</strong> Comanda minimă este de 8 bucăți pentru București și 16 bucăți pentru județul Ilfov.</p>
+            <p>Comanda minimă este de 16 bucăți pentru București și pentru județul Ilfov.</p>
 
-            <p><strong style={{ color: "var(--text)" }}>1.4</strong> Pentru evenimente în provincie, livrările se fac în limita a 250 km și în funcție de cantitatea comandată. Costul transportului va varia în funcție de distanță și urmează să vă fie comunicat în prealabil. Pentru mai multe detalii ne puteți contacta prin email, telefon sau WhatsApp.</p>
+            <p><strong style={{ color: "var(--text)" }}>1.4</strong> Pentru evenimente în provincie, livrările se fac în limita a 250 km și în funcție de cantitatea comandată. Costul transportului va varia în funcție de distanță, și urmează să vă fie comunicat în prealabil. Pentru mai multe detalii vă rugăm să ne contactați prin intermediul adresei de email, la numărul de telefon indicat sau prin intermediul aplicației mobile WhatsApp.</p>
 
             <p><strong style={{ color: "var(--text)" }}>1.5</strong> Produsele Donut Studio sunt artizanale și se livrează ambalate în cutii de diferite mărimi, în funcție de cantitatea comandată.</p>
 
-            <p><strong style={{ color: "var(--text)" }}>1.6</strong> Pentru evenimente, livrarea se face în ambalaje adecvate etapelor de manipulare — transport între laboratorul de producție și destinația finală — care nu afectează proprietățile nutritive, fizico-chimice și organoleptice ale produselor.</p>
+            <p><strong style={{ color: "var(--text)" }}>1.6</strong> Pentru evenimente, livrarea se face în ambalaje care sunt adecvate etapelor de manipulare — transport între laboratorul de producție și destinația finală de livrare — și care nu afectează proprietățile nutritive, fizico-chimice și organoleptice ale produselor.</p>
 
             <p><strong style={{ color: "var(--text)" }}>1.7</strong> Livrarea produselor Donut Studio se face cu mijloace proprii (nu sunt transportate cu firme de curierat).</p>
           </div>

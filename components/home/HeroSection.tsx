@@ -120,14 +120,14 @@ export default function HeroSection() {
             initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
-            className="flex items-center justify-center lg:pl-24"
+            className="flex items-center justify-center lg:pl-4 lg:-mr-20"
           >
             <div className="relative w-full">
               {/* Glow */}
               <div className="absolute -inset-6 rounded-[2.5rem] blur-3xl opacity-35 pointer-events-none"
                 style={{ background: "radial-gradient(ellipse, rgba(188,129,87,0.5) 0%, transparent 70%)" }} />
               {/* Video */}
-              <div className="relative rounded-[2rem] overflow-hidden border border-[#BC8157]/20 shadow-2xl shadow-[#BC8157]/20" style={{ aspectRatio: "4/3" }}>
+              <div className="relative rounded-[2rem] overflow-hidden border border-[#BC8157]/20 shadow-2xl shadow-[#BC8157]/20" style={{ aspectRatio: "16/9" }}>
                 <video
                   src="/hero.mp4"
                   autoPlay muted loop playsInline

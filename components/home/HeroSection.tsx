@@ -29,7 +29,7 @@ export default function HeroSection() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-[5fr_7fr] gap-16 items-center">
 
           {/* ── Text ── */}
           <div>
@@ -115,38 +115,31 @@ export default function HeroSection() {
             </motion.div>
           </div>
 
-          {/* spacer pentru grid */}
-          <div className="hidden lg:block" />
+          {/* ── Video ── */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
+            className="flex items-center justify-center lg:pl-24"
+          >
+            <div className="relative w-full">
+              {/* Glow */}
+              <div className="absolute -inset-6 rounded-[2.5rem] blur-3xl opacity-35 pointer-events-none"
+                style={{ background: "radial-gradient(ellipse, rgba(188,129,87,0.5) 0%, transparent 70%)" }} />
+              {/* Video */}
+              <div className="relative rounded-[2rem] overflow-hidden border border-[#BC8157]/20 shadow-2xl shadow-[#BC8157]/20" style={{ aspectRatio: "4/3" }}>
+                <video
+                  src="/hero.mp4"
+                  autoPlay muted loop playsInline
+                  className="w-full h-full object-cover block"
+                />
+                <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#080300]/60 to-transparent pointer-events-none" />
+              </div>
+            </div>
+          </motion.div>
 
         </div>
       </div>
-
-      {/* Video — absolute, jumătatea dreaptă a secțiunii */}
-      <motion.div
-        initial={{ opacity: 0, x: 60 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
-        className="absolute top-0 right-0 bottom-0 hidden lg:block w-[52%]"
-      >
-        {/* Glow */}
-        <div className="absolute inset-0 blur-3xl opacity-30 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at right, rgba(188,129,87,0.5) 0%, transparent 60%)" }} />
-
-        {/* Video */}
-        <div className="absolute inset-0 rounded-l-[2rem] overflow-hidden border-l border-y border-[#BC8157]/20 shadow-2xl shadow-[#BC8157]/20">
-          <video
-            src="/hero.mp4"
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="w-full h-full object-cover block"
-          />
-          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#080300]/70 to-transparent pointer-events-none" />
-          <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#080300]/60 to-transparent pointer-events-none" />
-        </div>
-      </motion.div>
-
     </section>
   );
 }

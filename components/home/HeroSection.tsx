@@ -28,7 +28,7 @@ export default function HeroSection() {
           style={{ background: "radial-gradient(circle, rgba(188,129,87,0.07) 0%, transparent 70%)" }} />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 sm:pt-28 pb-20 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-[5fr_7fr] gap-16 items-center">
 
           {/* ── Text ── */}

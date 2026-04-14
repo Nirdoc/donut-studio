@@ -525,7 +525,7 @@ export default function CheckoutClient() {
   // Derived
   const totalQty = items.reduce((s, i) => s + i.quantity, 0);
   const activeAddr = differentDelivery ? deliveryAddr : billingAddr;
-  const fee = storePickup || paymentMethod === "pickup" ? 0 : calcDeliveryFee(activeAddr);
+  const fee = storePickup ? 0 : calcDeliveryFee(activeAddr);
   const grandTotal = totalPrice() + fee;
 
   const availableSlots = useMemo(
@@ -1244,9 +1244,7 @@ export default function CheckoutClient() {
                             <div className="flex-1">
                               <p className="font-semibold text-sm text-[var(--text)]">{opt.title}</p>
                               <p className="text-xs mt-0.5" style={{ color: "var(--text-45)" }}>
-                                {opt.id === "pickup" && !pickupAllowed
-                                  ? "Necesită dată de livrare cu minim 24h înainte"
-                                  : opt.desc}
+                                {opt.desc}
                               </p>
                             </div>
                             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
@@ -1346,7 +1344,7 @@ export default function CheckoutClient() {
                 </div>
                 <div className="flex justify-between text-sm" style={{ color: "var(--text-55)" }}>
                   <span>Livrare</span>
-                  {paymentMethod === "pickup"
+                  {storePickup
                     ? <span className="text-green-500 font-medium">Gratuită</span>
                     : <span>{fee} lei</span>}
                 </div>

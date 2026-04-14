@@ -120,21 +120,21 @@ export default function HeroSection() {
             initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
-            className="relative hidden lg:block"
+            className="relative hidden lg:block -my-20"
           >
             {/* Glow ambiant */}
             <div className="absolute -inset-8 rounded-[2.5rem] blur-3xl opacity-35 pointer-events-none"
               style={{ background: "radial-gradient(ellipse, rgba(188,129,87,0.55) 0%, transparent 70%)" }} />
 
             {/* Video */}
-            <div className="relative rounded-[2rem] overflow-hidden border border-[#BC8157]/20 shadow-2xl shadow-[#BC8157]/20">
+            <div className="relative rounded-[2rem] overflow-hidden border border-[#BC8157]/20 shadow-2xl shadow-[#BC8157]/20 min-h-[600px]">
               <video
                 src="/hero.mp4"
                 autoPlay
                 muted
                 loop
                 playsInline
-                className="w-full h-full object-cover block"
+                className="w-full h-full object-cover block absolute inset-0"
               />
               <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#080300]/60 to-transparent pointer-events-none" />
               <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white/4 to-transparent pointer-events-none" />

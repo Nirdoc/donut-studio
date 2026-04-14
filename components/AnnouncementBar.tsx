@@ -16,6 +16,28 @@ function WhatsAppIcon() {
   );
 }
 
+function Chips() {
+  return (
+    <>
+      <a href="tel:0745018888"
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[#BC8157]/30 bg-[#BC8157]/8 hover:bg-[#BC8157]/20 hover:border-[#BC8157]/60 transition-all duration-200">
+        <Phone size={11} className="text-[#BC8157] shrink-0" />
+        <span className="text-[11px] font-semibold tracking-wide text-[#BC8157] whitespace-nowrap hidden sm:inline">0745 018 888</span>
+      </a>
+      <a href="mailto:contact@donutstudio.ro"
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[#BC8157]/30 bg-[#BC8157]/8 hover:bg-[#BC8157]/20 hover:border-[#BC8157]/60 transition-all duration-200">
+        <Mail size={11} className="text-[#BC8157] shrink-0" />
+        <span className="text-[11px] font-semibold tracking-wide text-[#BC8157] whitespace-nowrap hidden sm:inline">contact@donutstudio.ro</span>
+      </a>
+      <a href="https://wa.me/40745018888" target="_blank" rel="noopener noreferrer"
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[#25D366]/40 bg-[#25D366]/8 hover:bg-[#25D366]/20 hover:border-[#25D366]/70 transition-all duration-200">
+        <span className="text-[#25D366]"><WhatsAppIcon /></span>
+        <span className="text-[11px] font-semibold tracking-wide text-[#25D366] whitespace-nowrap hidden sm:inline">WhatsApp</span>
+      </a>
+    </>
+  );
+}
+
 export default function AnnouncementBar({ visible }: { visible: boolean }) {
   const [index, setIndex] = useState(0);
   const [show, setShow] = useState(true);
@@ -29,69 +51,49 @@ export default function AnnouncementBar({ visible }: { visible: boolean }) {
     return () => clearInterval(id);
   }, []);
 
+  const barStyle = {
+    background: "linear-gradient(90deg, #080300 0%, #0f0602 50%, #080300 100%)",
+    borderBottom: "1px solid rgba(188,129,87,0.15)",
+  };
+
+  const textEl = (size: string) =>
+    MESSAGES.map((msg, i) => (
+      <p
+        key={i}
+        className={`absolute left-0 right-0 top-1/2 -translate-y-1/2 ${size} font-semibold uppercase tracking-[0.2em] text-center whitespace-nowrap transition-opacity duration-300`}
+        style={{ color: "rgba(188,129,87,0.85)", opacity: i === index ? (show ? 1 : 0) : 0 }}
+      >
+        {msg}
+      </p>
+    ));
+
   return (
     <div
       className="overflow-hidden transition-all duration-500 ease-in-out"
       style={{ maxHeight: visible ? "68px" : "0px", opacity: visible ? 1 : 0 }}
     >
-      <div
-        className="relative flex flex-col sm:flex-row sm:items-center sm:h-12 px-4 sm:px-6 gap-0 sm:gap-3"
-        style={{
-          background: "linear-gradient(90deg, #080300 0%, #0f0602 50%, #080300 100%)",
-          borderBottom: "1px solid rgba(188,129,87,0.15)",
-        }}
-      >
-        {/* Text rotativ — perfect centrat în toată bara */}
+      {/* ── MOBIL (< sm): 2 rânduri separate ── */}
+      <div className="sm:hidden flex flex-col" style={barStyle}>
+        {/* Rând 1: text centrat */}
+        <div className="relative h-8 overflow-hidden">
+          {textEl("text-[11px]")}
+        </div>
+        {/* Rând 2: chip-uri centrate */}
+        <div className="h-8 flex items-center justify-center gap-2">
+          <Chips />
+        </div>
+      </div>
+
+      {/* ── DESKTOP (sm+): 1 rând, chips stânga, text centrat în toată bara ── */}
+      <div className="hidden sm:flex relative h-12 items-center px-6 gap-3" style={barStyle}>
+        {/* Text absolute centrat */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {MESSAGES.map((msg, i) => (
-            <p
-              key={i}
-              className="absolute left-0 right-0 top-1/2 -translate-y-1/2 text-[13px] sm:text-[15px] font-semibold uppercase tracking-[0.2em] text-center whitespace-nowrap transition-opacity duration-300"
-              style={{
-                color: "rgba(188,129,87,0.85)",
-                opacity: i === index ? (show ? 1 : 0) : 0,
-              }}
-            >
-              {msg}
-            </p>
-          ))}
+          {textEl("text-[15px]")}
         </div>
-
-        {/* Chips — pe mobil rândul 2 (jos), pe desktop stânga */}
-        <div className="relative z-10 flex items-center justify-center sm:justify-start gap-2 shrink-0 pb-1.5 sm:pb-0 pt-0 sm:pt-0">
-          <a
-            href="tel:0745018888"
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[#BC8157]/30 bg-[#BC8157]/8 hover:bg-[#BC8157]/20 hover:border-[#BC8157]/60 transition-all duration-200"
-          >
-            <Phone size={11} className="text-[#BC8157] shrink-0" />
-            <span className="text-[11px] font-semibold tracking-wide text-[#BC8157] whitespace-nowrap hidden sm:inline">
-              0745 018 888
-            </span>
-          </a>
-
-          <a
-            href="mailto:contact@donutstudio.ro"
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[#BC8157]/30 bg-[#BC8157]/8 hover:bg-[#BC8157]/20 hover:border-[#BC8157]/60 transition-all duration-200"
-          >
-            <Mail size={11} className="text-[#BC8157] shrink-0" />
-            <span className="text-[11px] font-semibold tracking-wide text-[#BC8157] whitespace-nowrap hidden lg:inline">
-              contact@donutstudio.ro
-            </span>
-          </a>
-
-          <a
-            href="https://wa.me/40745018888"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[#25D366]/40 bg-[#25D366]/8 hover:bg-[#25D366]/20 hover:border-[#25D366]/70 transition-all duration-200"
-          >
-            <span className="text-[#25D366]"><WhatsAppIcon /></span>
-            <span className="text-[11px] font-semibold tracking-wide text-[#25D366] whitespace-nowrap hidden sm:inline">
-              WhatsApp
-            </span>
-          </a>
+        {/* Chips stânga */}
+        <div className="relative z-10 flex items-center gap-2 shrink-0">
+          <Chips />
         </div>
-
       </div>
     </div>
   );

@@ -14,6 +14,7 @@ const navLinks = [
   { href: "/menu", label: "Meniu" },
   { href: "/galerie", label: "Galerie" },
   { href: "/evenimente", label: "Evenimente" },
+  { href: "/blog", label: "Blog" },
   { href: "/povestea-noastra", label: "Povestea noastră" },
   { href: "/contact", label: "Contact" },
 ];

@@ -100,13 +100,10 @@ type PaymentMethod = "cash" | "card" | "pickup";
 type DwellingType = "casa" | "bloc";
 
 const TIME_SLOTS = [
-  { label: "08:00 – 10:00", startHour: 8 },
-  { label: "10:00 – 12:00", startHour: 10 },
-  { label: "12:00 – 14:00", startHour: 12 },
-  { label: "14:00 – 16:00", startHour: 14 },
-  { label: "16:00 – 18:00", startHour: 16 },
-  { label: "18:00 – 20:00", startHour: 18 },
-  { label: "20:00 – 22:00", startHour: 20 },
+  { label: "08:00 – 11:00", startHour: 8 },
+  { label: "11:00 – 14:00", startHour: 11 },
+  { label: "14:00 – 17:00", startHour: 14 },
+  { label: "17:00 – 20:00", startHour: 17 },
 ];
 
 function calcDeliveryFee(addr: { city: string; judet: string }): number {
@@ -467,6 +464,7 @@ export default function CheckoutClient() {
   // Step 1
   const [deliveryDate, setDeliveryDate] = useState("");
   const [deliveryTime, setDeliveryTime] = useState("");
+  const [storePickup, setStorePickup] = useState(false);
   const [blockedSlots, setBlockedSlots] = useState<string[]>([]);
 
   // Step 2 — contact
@@ -515,7 +513,7 @@ export default function CheckoutClient() {
     };
 
     validateAddr(billingAddr, "b_");
-    if (differentDelivery) validateAddr(deliveryAddr, "d_");
+    if (!storePickup && differentDelivery) validateAddr(deliveryAddr, "d_");
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -527,7 +525,7 @@ export default function CheckoutClient() {
   // Derived
   const totalQty = items.reduce((s, i) => s + i.quantity, 0);
   const activeAddr = differentDelivery ? deliveryAddr : billingAddr;
-  const fee = paymentMethod === "pickup" ? 0 : calcDeliveryFee(activeAddr);
+  const fee = storePickup || paymentMethod === "pickup" ? 0 : calcDeliveryFee(activeAddr);
   const grandTotal = totalPrice() + fee;
 
   const availableSlots = useMemo(
@@ -559,6 +557,12 @@ export default function CheckoutClient() {
     }
   }, [pickupAllowed, paymentMethod]);
 
+  // When store pickup is selected, force card payment
+  useEffect(() => {
+    if (storePickup) setPaymentMethod("card");
+    else setPaymentMethod("cash");
+  }, [storePickup]);
+
   const handleDateChange = (val: string) => {
     setDeliveryDate(val);
     setDeliveryTime("");
@@ -576,11 +580,12 @@ export default function CheckoutClient() {
 
   const orderPayload = () => ({
     deliveryDate,
-    deliveryTime,
+    deliveryTime: storePickup ? "11:00 - 19:00 (ridicare)" : deliveryTime,
+    storePickup,
     contact,
     billingAddr,
-    differentDelivery,
-    deliveryAddr: differentDelivery ? deliveryAddr : null,
+    differentDelivery: storePickup ? false : differentDelivery,
+    deliveryAddr: (!storePickup && differentDelivery) ? deliveryAddr : null,
     paymentMethod,
     deliveryFee: fee,
     subtotal: totalPrice(),
@@ -706,7 +711,7 @@ export default function CheckoutClient() {
     );
   }
 
-  const stepLabels = ["Date livrare", "Date facturare", "Plată"];
+  const stepLabels = ["Date livrare/ridicare", "Date facturare", "Plată"];
 
   return (
     <div className="section-base min-h-screen pt-28 pb-16">
@@ -762,7 +767,7 @@ export default function CheckoutClient() {
                       <Calendar size={18} className="text-[#BC8157]" />
                     </div>
                     <div>
-                      <h2 className="font-semibold text-lg text-[var(--text)]">Date livrare</h2>
+                      <h2 className="font-semibold text-lg text-[var(--text)]">Date livrare/ridicare</h2>
                       <p className="text-xs" style={{ color: "var(--text-40)" }}>Alege data și intervalul orar preferat</p>
                     </div>
                   </div>
@@ -771,7 +776,7 @@ export default function CheckoutClient() {
                     <div>
                       <label className="block text-sm font-medium mb-2 flex items-center gap-1.5" style={{ color: "var(--label-text)" }}>
                         <Calendar size={13} className="text-[#BC8157]" />
-                        Data de livrare <span className="text-red-400">*</span>
+                        Data de livrare/ridicare <span className="text-red-400">*</span>
                       </label>
                       <DatePicker
                         value={deliveryDate}
@@ -780,7 +785,39 @@ export default function CheckoutClient() {
                       />
                     </div>
 
-                    <div>
+                    {/* Checkbox ridicare din magazin */}
+                    <label className="flex items-start gap-3 p-4 rounded-2xl border border-[#BC8157]/15 hover:border-[#BC8157]/30 cursor-pointer transition-colors select-none"
+                      style={{ background: "var(--surface)" }}>
+                      <div className="relative mt-0.5">
+                        <input type="checkbox" checked={storePickup}
+                          onChange={(e) => { setStorePickup(e.target.checked); if (e.target.checked) setDeliveryTime(""); }}
+                          className="sr-only" />
+                        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
+                          storePickup ? "bg-[#BC8157] border-[#BC8157]" : "border-[#BC8157]/40"
+                        }`}>
+                          {storePickup && <Check size={11} className="text-white" strokeWidth={3} />}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-[var(--text)]">Vrei ridicare din magazin?</p>
+                        <p className="text-xs mt-0.5" style={{ color: "var(--text-40)" }}>Fără taxă de livrare · Piața Victoriei, București</p>
+                      </div>
+                    </label>
+
+                    {/* Mesaj program ridicare */}
+                    {storePickup && (
+                      <div className="flex items-start gap-3 p-4 rounded-2xl bg-[#BC8157]/8 border border-[#BC8157]/20">
+                        <Store size={16} className="text-[#BC8157] mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-[var(--text)]">Interval de ridicare</p>
+                          <p className="text-sm mt-0.5" style={{ color: "var(--text-60)" }}>
+                            Poți ridica comanda în intervalul <strong className="text-[#BC8157]">11:00 – 19:00</strong>, în ziua selectată.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div style={{ display: storePickup ? "none" : undefined }}>
                       <label className="block text-sm font-medium mb-2 flex items-center gap-1.5" style={{ color: "var(--label-text)" }}>
                         <Clock size={13} className="text-[#BC8157]" />
                         Interval orar <span className="text-red-400">*</span>
@@ -813,7 +850,7 @@ export default function CheckoutClient() {
                         className="px-6 py-4 border border-[#BC8157]/20 rounded-2xl text-sm font-medium hover:border-[#BC8157]/50 transition-colors text-[var(--text)]">
                         ← Înapoi
                       </Link>
-                      <button type="submit" disabled={!deliveryDate || !deliveryTime}
+                      <button type="submit" disabled={!deliveryDate || (!storePickup && !deliveryTime)}
                         className="flex-1 bg-[#BC8157] hover:bg-[#9a6540] disabled:opacity-40 disabled:cursor-not-allowed text-white py-4 rounded-2xl font-semibold transition-colors">
                         Continuă →
                       </button>
@@ -1031,7 +1068,7 @@ export default function CheckoutClient() {
                     </div>
 
                     {/* ── Checkbox altă adresă livrare ── */}
-                    <label className="flex items-start gap-3 p-4 rounded-2xl border border-[#BC8157]/15 hover:border-[#BC8157]/30 cursor-pointer transition-colors select-none"
+                    {!storePickup && <label className="flex items-start gap-3 p-4 rounded-2xl border border-[#BC8157]/15 hover:border-[#BC8157]/30 cursor-pointer transition-colors select-none"
                       style={{ background: "var(--surface)" }}>
                       <div className="relative mt-0.5">
                         <input type="checkbox" checked={differentDelivery}
@@ -1046,10 +1083,10 @@ export default function CheckoutClient() {
                         <p className="text-sm font-medium text-[var(--text)]">Livrare la altă adresă</p>
                         <p className="text-xs mt-0.5" style={{ color: "var(--text-40)" }}>Adresa de livrare diferă de cea de facturare</p>
                       </div>
-                    </label>
+                    </label>}
 
                     {/* ── Adresă livrare alternativă ── */}
-                    <AnimatePresence>
+                    {!storePickup && <AnimatePresence>
                       {differentDelivery && (
                         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
                           className="overflow-hidden">
@@ -1160,7 +1197,7 @@ export default function CheckoutClient() {
                           </div>
                         </motion.div>
                       )}
-                    </AnimatePresence>
+                    </AnimatePresence>}
 
                     <div className="flex gap-3 pt-2">
                       <button type="button" onClick={() => setStep(1)}
@@ -1195,11 +1232,13 @@ export default function CheckoutClient() {
                     </div>
 
                     <div className="space-y-3 mb-6">
-                      {[
+                      {(storePickup ? [
+                        { id: "card" as PaymentMethod, icon: CreditCard, title: "Plată cu cardul", desc: "Fără taxă de livrare · Ridicare din magazin", disabled: false },
+                      ] : [
                         { id: "cash"   as PaymentMethod, icon: Banknote,   title: "Numerar la livrare",   desc: `Taxa de livrare: ${fee} lei`,                   disabled: false },
                         { id: "card"   as PaymentMethod, icon: CreditCard, title: "Plată cu cardul",      desc: `Taxa de livrare: ${fee} lei`,                   disabled: false },
                         { id: "pickup" as PaymentMethod, icon: Store,       title: "Ridicare din magazin", desc: "Fără taxă de livrare · Piața Victoriei, București",      disabled: !pickupAllowed },
-                      ].map((opt) => {
+                      ]).map((opt) => {
                         const selected = paymentMethod === opt.id;
                         return (
                           <button key={opt.id} type="button"
@@ -1305,12 +1344,12 @@ export default function CheckoutClient() {
                 ))}
               </div>
 
-              {deliveryDate && deliveryTime && (
+              {deliveryDate && (storePickup || deliveryTime) && (
                 <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl mb-4 text-xs" style={{ background: "var(--surface)" }}>
                   <Calendar size={13} className="text-[#BC8157] flex-shrink-0" />
                   <span style={{ color: "var(--text-60)" }}>
                     {new Date(deliveryDate + "T12:00:00").toLocaleDateString("ro-RO", { day: "numeric", month: "long" })}
-                    {" · "}{deliveryTime}
+                    {storePickup ? " · Ridicare 11:00–19:00" : ` · ${deliveryTime}`}
                   </span>
                 </div>
               )}

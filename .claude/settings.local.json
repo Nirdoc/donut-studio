@@ -104,7 +104,10 @@
       "Bash(curl -sL \"https://ec.europa.eu/consumers/odr/main/img/ODR_logo_en.png\" -o /Users/codrin.ene/vsc/donut-studio/public/sol-odr.png)",
       "Bash(curl -sL \"https://anpc.ro/wp-content/uploads/2023/01/SOL.png\" -o /tmp/sol-test.png)",
       "Read(//tmp/**)",
-      "Bash(curl -sL \"https://anpc.ro/wp-content/uploads/2022/08/pictogramaSOL.png\" -o /Users/codrin.ene/vsc/donut-studio/public/sol-odr.png)"
+      "Bash(curl -sL \"https://anpc.ro/wp-content/uploads/2022/08/pictogramaSOL.png\" -o /Users/codrin.ene/vsc/donut-studio/public/sol-odr.png)",
+      "Bash(curl -L \"https://netopia-payments.com/wp-content/uploads/2022/07/netopia-payments-logo.svg\" -o /Users/codrin.ene/vsc/donut-studio/public/netopia.svg)",
+      "Bash(curl -s \"https://netopia-payments.com\")",
+      "Bash(curl -L \"https://netopia-payments.com/core/assets/5993428bab/images/logo.svg\" -o /Users/codrin.ene/vsc/donut-studio/public/netopia.svg)"
     ]
   }
 }

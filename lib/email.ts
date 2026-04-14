@@ -178,7 +178,7 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
         <td style="color:rgba(240,221,200,0.70);font-size:13px;text-align:right;padding:4px 0;">${data.subtotal.toFixed(2)} lei</td>
       </tr>
       <tr>
-        <td style="color:rgba(240,221,200,0.50);font-size:13px;padding:4px 0;">Livrare</td>
+        <td style="color:rgba(240,221,200,0.50);font-size:13px;padding:4px 0;">Taxă livrare</td>
         <td style="font-size:13px;text-align:right;padding:4px 0;${data.deliveryFee === 0 ? "color:#4ade80;" : "color:rgba(240,221,200,0.70);"}">
           ${data.deliveryFee === 0 ? "Gratuită" : data.deliveryFee.toFixed(2) + " lei"}
         </td>

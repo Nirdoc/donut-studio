@@ -143,44 +143,69 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Protecția consumatorului */}
+        {/* Protecția consumatorului + Plăți securizate */}
         <div className="border-t mt-12 pt-8" style={{ borderColor: "var(--border)" }}>
-          <p className="text-xs font-semibold uppercase tracking-widest mb-5" style={{ color: "var(--text-40)" }}>
-            Protecția consumatorului
-          </p>
-          <div className="flex flex-wrap items-center gap-6">
-            <a
-              href="https://anpc.ro/ce-este-sal/"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Soluționarea Alternativă a Litigiilor — ANPC"
-              className="opacity-70 hover:opacity-100 transition-opacity duration-200"
-            >
-              <Image
-                src="/anpc-sal.png"
-                alt="ANPC — Soluționarea Alternativă a Litigiilor"
-                width={180}
-                height={45}
-                className="h-10 w-auto"
-                unoptimized
-              />
-            </a>
-            <a
-              href="https://ec.europa.eu/consumers/odr"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Soluționarea Online a Litigiilor — SOL"
-              className="opacity-70 hover:opacity-100 transition-opacity duration-200"
-            >
-              <Image
-                src="/sol-odr.png"
-                alt="SOL — Soluționarea Online a Litigiilor"
-                width={220}
-                height={55}
-                className="h-10 w-auto"
-                unoptimized
-              />
-            </a>
+          <div className="flex flex-wrap items-start justify-between gap-8 mb-8">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest mb-5" style={{ color: "var(--text-40)" }}>
+                Protecția consumatorului
+              </p>
+              <div className="flex flex-wrap items-center gap-6">
+                <a
+                  href="https://anpc.ro/ce-este-sal/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Soluționarea Alternativă a Litigiilor — ANPC"
+                  className="opacity-70 hover:opacity-100 transition-opacity duration-200"
+                >
+                  <Image
+                    src="/anpc-sal.png"
+                    alt="ANPC — Soluționarea Alternativă a Litigiilor"
+                    width={180}
+                    height={45}
+                    className="h-10 w-auto"
+                    unoptimized
+                  />
+                </a>
+                <a
+                  href="https://ec.europa.eu/consumers/odr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Soluționarea Online a Litigiilor — SOL"
+                  className="opacity-70 hover:opacity-100 transition-opacity duration-200"
+                >
+                  <Image
+                    src="/sol-odr.png"
+                    alt="SOL — Soluționarea Online a Litigiilor"
+                    width={220}
+                    height={55}
+                    className="h-10 w-auto"
+                    unoptimized
+                  />
+                </a>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest mb-5" style={{ color: "var(--text-40)" }}>
+                Plăți securizate
+              </p>
+              <a
+                href="https://netopia-payments.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Plăți securizate prin Netopia Payments"
+                className="opacity-70 hover:opacity-100 transition-opacity duration-200 inline-block"
+              >
+                <Image
+                  src="/netopia.svg"
+                  alt="Netopia Payments"
+                  width={140}
+                  height={40}
+                  className="h-8 w-auto"
+                  unoptimized
+                />
+              </a>
+            </div>
           </div>
         </div>
 

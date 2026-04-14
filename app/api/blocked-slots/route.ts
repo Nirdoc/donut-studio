@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-const MAX_CAPACITY = 3;
+const MAX_CAPACITY = 4;
 
 // Public: GET /api/blocked-slots?date=YYYY-MM-DD
 // Returns labels of slots unavailable for booking:

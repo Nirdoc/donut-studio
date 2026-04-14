@@ -29,10 +29,10 @@ export default function HeroSection() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 items-center">
 
           {/* ── Text ── */}
-          <div>
+          <div className="lg:col-span-2">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -120,21 +120,21 @@ export default function HeroSection() {
             initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
-            className="relative hidden lg:block -my-20"
+            className="relative hidden lg:block lg:col-span-3"
           >
             {/* Glow ambiant */}
             <div className="absolute -inset-8 rounded-[2.5rem] blur-3xl opacity-35 pointer-events-none"
               style={{ background: "radial-gradient(ellipse, rgba(188,129,87,0.55) 0%, transparent 70%)" }} />
 
             {/* Video */}
-            <div className="relative rounded-[2rem] overflow-hidden border border-[#BC8157]/20 shadow-2xl shadow-[#BC8157]/20 min-h-[600px]">
+            <div className="relative rounded-[2rem] overflow-hidden border border-[#BC8157]/20 shadow-2xl shadow-[#BC8157]/20 aspect-video w-full">
               <video
                 src="/hero.mp4"
                 autoPlay
                 muted
                 loop
                 playsInline
-                className="w-full h-full object-cover block absolute inset-0"
+                className="absolute inset-0 w-full h-full object-cover block"
               />
               <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#080300]/60 to-transparent pointer-events-none" />
               <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white/4 to-transparent pointer-events-none" />

@@ -32,10 +32,10 @@ export default function AnnouncementBar({ visible }: { visible: boolean }) {
   return (
     <div
       className="overflow-hidden transition-all duration-500 ease-in-out"
-      style={{ maxHeight: visible ? "48px" : "0px", opacity: visible ? 1 : 0 }}
+      style={{ maxHeight: visible ? "68px" : "0px", opacity: visible ? 1 : 0 }}
     >
       <div
-        className="relative h-12 flex items-center px-4 sm:px-6 gap-3"
+        className="relative flex flex-col sm:flex-row sm:items-center sm:h-12 px-4 sm:px-6 gap-0 sm:gap-3"
         style={{
           background: "linear-gradient(90deg, #080300 0%, #0f0602 50%, #080300 100%)",
           borderBottom: "1px solid rgba(188,129,87,0.15)",
@@ -57,8 +57,8 @@ export default function AnnouncementBar({ visible }: { visible: boolean }) {
           ))}
         </div>
 
-        {/* Stânga — chips contact */}
-        <div className="relative z-10 flex items-center gap-2 shrink-0">
+        {/* Chips — pe mobil rândul 2 (jos), pe desktop stânga */}
+        <div className="relative z-10 flex items-center justify-center sm:justify-start gap-2 shrink-0 pb-1.5 sm:pb-0 pt-0 sm:pt-0">
           <a
             href="tel:0745018888"
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[#BC8157]/30 bg-[#BC8157]/8 hover:bg-[#BC8157]/20 hover:border-[#BC8157]/60 transition-all duration-200"

@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+.grecaptcha-badge { visibility: hidden !important; }
+
 /* ─── Dark theme (default) ──────────────────── */
 :root {
   --brand:       #BC8157;

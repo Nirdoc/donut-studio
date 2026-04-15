@@ -65,12 +65,12 @@ export default async function ProductPage({
   const { nutrition } = product;
 
   return (
-    <div className="section-base min-h-screen pt-28 pb-16">
+    <div className="section-base min-h-screen pt-36 pb-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back */}
         <Link
           href="/menu"
-          className="inline-flex items-center gap-2 text-[#BC8157] text-sm font-medium mb-8 hover:gap-3 transition-all"
+          className="inline-flex items-center gap-2 text-[#BC8157] text-sm font-medium mb-8 px-3 py-1.5 -ml-3 rounded-lg hover:bg-[#BC8157]/10 hover:gap-3 transition-all"
         >
           <ArrowLeft size={16} />
           Înapoi la meniu

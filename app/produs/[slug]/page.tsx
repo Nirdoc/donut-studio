@@ -86,11 +86,10 @@ export default async function ProductPage({
                 alt={product.name}
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover brightness-125"
+                className="object-cover"
                 priority
                 loading="eager"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
               <div className="absolute top-4 left-4 flex items-center gap-2">
                 <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${categoryColors[product.category]}`}>
                   {categoryLabels[product.category]}

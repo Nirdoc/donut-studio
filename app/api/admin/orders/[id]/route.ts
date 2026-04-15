@@ -6,8 +6,14 @@ import { sendInvoiceEmail, sendOrderCompletedEmail } from "@/lib/email";
 
 async function nextFacturaNumber(): Promise<string> {
   const year = new Date().getFullYear();
-  const count = await prisma.factura.count();
-  return `F-${year}-${String(count + 1).padStart(5, "0")}`;
+  const last = await prisma.factura.findFirst({
+    where: { facturaNumber: { startsWith: `F-${year}-` } },
+    orderBy: { facturaNumber: "desc" },
+  });
+  const next = last
+    ? parseInt(last.facturaNumber.split("-")[2], 10) + 1
+    : 1;
+  return `F-${year}-${String(next).padStart(5, "0")}`;
 }
 
 export async function PATCH(

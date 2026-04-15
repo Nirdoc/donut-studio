@@ -50,9 +50,8 @@ export default function ProductCard({ product, index = 0 }: { product: Product; 
         <Image
           src={product.image} alt={product.name} fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className={`object-cover brightness-125 transition-transform duration-500 ${available ? "group-hover:scale-110" : ""}`}
+          className={`object-cover transition-transform duration-500 ${available ? "group-hover:scale-110" : ""}`}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
 
         <div className="absolute top-3 left-3 flex items-center gap-2">
           <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${categoryClasses[product.category]}`}>

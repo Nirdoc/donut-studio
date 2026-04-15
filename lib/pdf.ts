@@ -70,14 +70,13 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
 
     const PAGE_W = 595.28;
     const PAGE_H = 841.89;
-    const M      = 40;          // margin
+    const M      = 40;
     const BODY_W = PAGE_W - M * 2;
 
     const fmtDate = (d: Date) =>
       d.toLocaleDateString("ro-RO", { day: "2-digit", month: "2-digit", year: "numeric" });
 
-    const scadenta = new Date(data.createdAt);
-    scadenta.setDate(scadenta.getDate() + 7);
+    const dateStr = fmtDate(data.createdAt);
 
     // ── White page ───────────────────────────────────────────────────────────
     doc.rect(0, 0, PAGE_W, PAGE_H).fill("#FFFFFF");
@@ -88,40 +87,34 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
     // ── HEADER ───────────────────────────────────────────────────────────────
     const HDR_Y = 18;
 
-    // Logo
+    // Logo only — no company name beside it
     try { doc.image(LOGO_PNG, M, HDR_Y, { width: 72, height: 72 }); } catch { /* skip */ }
 
-    // Company name beside logo
-    doc.font("Bold").fontSize(13).fill(BLACK)
-      .text(COMPANY.name, M + 82, HDR_Y + 10, { width: 200 });
-    doc.font("Regular").fontSize(8).fill(GRAY)
-      .text(`CUI: ${COMPANY.cui}  ·  Reg. Com.: ${COMPANY.regCom}`, M + 82, HDR_Y + 28, { width: 230 });
-
-    // Invoice title block — right side
-    const TITLE_X = PAGE_W - M - 180;
-    doc.rect(TITLE_X - 12, HDR_Y - 4, 196, 82).fill(BG_BOX);
-    doc.rect(TITLE_X - 12, HDR_Y - 4, 4, 82).fill(BRAND);
+    // Invoice title block — right side (3 date rows)
+    const TITLE_X = PAGE_W - M - 190;
+    doc.rect(TITLE_X - 12, HDR_Y - 4, 206, 94).fill(BG_BOX);
+    doc.rect(TITLE_X - 12, HDR_Y - 4, 4, 94).fill(BRAND);
 
     doc.font("Bold").fontSize(20).fill(BRAND)
-      .text("FACTURĂ", TITLE_X, HDR_Y + 4, { width: 176 });
+      .text("FACTURĂ", TITLE_X, HDR_Y + 4, { width: 186 });
     doc.font("Bold").fontSize(11).fill(BLACK)
-      .text(data.facturaNumber, TITLE_X, HDR_Y + 28, { width: 176 });
+      .text(data.facturaNumber, TITLE_X, HDR_Y + 28, { width: 186 });
     doc.font("Regular").fontSize(8).fill(DGRAY)
-      .text(`Data emitere:   ${fmtDate(data.createdAt)}`, TITLE_X, HDR_Y + 44, { width: 176 })
-      .text(`Data scadenta: ${fmtDate(scadenta)}`,        TITLE_X, HDR_Y + 56, { width: 176 });
+      .text(`Data emitere:    ${dateStr}`, TITLE_X, HDR_Y + 46, { width: 186 })
+      .text(`Data scadenta:  ${dateStr}`,  TITLE_X, HDR_Y + 58, { width: 186 })
+      .text(`Data platii:       ${dateStr}`, TITLE_X, HDR_Y + 70, { width: 186 });
 
     // ── Divider ──────────────────────────────────────────────────────────────
-    const DIV1_Y = HDR_Y + 82 + 10;
+    const DIV1_Y = HDR_Y + 94 + 8;
     doc.moveTo(M, DIV1_Y).lineTo(PAGE_W - M, DIV1_Y)
       .strokeColor(LGRAY).lineWidth(0.5).stroke();
 
     // ── TWO-COLUMN INFO ───────────────────────────────────────────────────────
-    const COL_W  = BODY_W / 2 - 8;
+    const COL_W   = BODY_W / 2 - 8;
     const LEFT_X  = M;
     const RIGHT_X = M + COL_W + 16;
     const INFO_Y  = DIV1_Y + 12;
 
-    // Helper — draws a key/value row, returns next Y
     const kv = (x: number, y: number, key: string, val: string, w = COL_W): number => {
       const kw = doc.font("Bold").fontSize(8).widthOfString(key + " ");
       doc.font("Bold").fontSize(8).fill(BLACK).text(key, x, y, { continued: false });
@@ -183,47 +176,70 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
     // ── PRODUCTS TABLE ────────────────────────────────────────────────────────
     const TABLE_Y = Math.max(ly, ry) + 20;
 
-    // Column x positions — all within [M … M+BODY_W]
-    // Right edge = M + BODY_W = 555.28
-    const C_NR    = M;                         //  20 wide
-    const C_NAME  = M + 22;                    //  flexible
-    const C_UM    = M + BODY_W - 222;          //  30 wide, center
-    const C_QTY   = M + BODY_W - 188;          //  42 wide, right
-    const C_PRICE = M + BODY_W - 142;          //  54 wide, right
-    const C_TVA   = M + BODY_W - 84;           //  40 wide, right
-    const C_TOTAL = M + BODY_W - 40;           //  40 wide, right  → ends at 555.28
-    const NAME_W  = C_UM - C_NAME - 4;
+    // Column positions:
+    // Nr. | Denumire | U.M. | Cant. | Pret unitar (fara TVA) -Lei- | Valoare (fara TVA) -Lei- | TVA (21%)
+    const C_NR      = M;
+    const C_NAME    = M + 20;
+    const C_UM      = M + BODY_W - 252;
+    const C_QTY     = M + BODY_W - 220;
+    const C_PRICE   = M + BODY_W - 186;   // "Pret unitar (fara TVA) -Lei-"
+    const C_VALOARE = M + BODY_W - 112;   // "Valoare (fara TVA) -Lei-"
+    const C_TVA     = M + BODY_W - 52;    // "TVA (21%)"
+    const NAME_W    = C_UM - C_NAME - 4;
 
-    // Header
-    doc.rect(M, TABLE_Y, BODY_W, 17).fill(BLACK);
-    doc.font("Bold").fontSize(7.5).fill("#FFFFFF");
-    const TH = TABLE_Y + 4.5;
-    doc.text("Nr.",         C_NR,    TH, { width: 20,   align: "center" });
-    doc.text("Denumire",    C_NAME,  TH, { width: NAME_W });
-    doc.text("UM",          C_UM,    TH, { width: 30,   align: "center" });
-    doc.text("Cant.",       C_QTY,   TH, { width: 42,   align: "right" });
-    doc.text("Pret unitar (lei)", C_PRICE, TH, { width: 54, align: "right" });
-    doc.text("TVA%",        C_TVA,   TH, { width: 40,   align: "right" });
-    doc.text("Total",       C_TOTAL, TH, { width: 40,   align: "right" });
+    // Header (height 33 for 3-line text)
+    const HDR_H = 33;
+    doc.rect(M, TABLE_Y, BODY_W, HDR_H).fill(BLACK);
+    doc.font("Bold").fontSize(7).fill("#FFFFFF");
+    const TH1 = TABLE_Y + 3;
+    const TH2 = TABLE_Y + 12;
+    const TH3 = TABLE_Y + 21;
 
-    const allItems = data.items;
+    doc.text("Nr.",         C_NR,      TH1, { width: 18, align: "center" });
+    doc.text("Denumire",    C_NAME,    TH1, { width: NAME_W });
+    doc.text("U.M.",        C_UM,      TH1, { width: 28, align: "center" });
+    doc.text("Cant.",       C_QTY,     TH1, { width: 32, align: "center" });
 
-    let rowY = TABLE_Y + 17;
-    allItems.forEach((item, i) => {
+    // Three-line headers for price/value columns, two-line for TVA
+    doc.text("Pret unitar",      C_PRICE,   TH1, { width: 72, align: "center" });
+    doc.text("(fara TVA)",       C_PRICE,   TH2, { width: 72, align: "center" });
+    doc.text("-Lei-",            C_PRICE,   TH3, { width: 72, align: "center" });
+
+    doc.text("Valoare",          C_VALOARE, TH1, { width: 58, align: "center" });
+    doc.text("(fara TVA)",       C_VALOARE, TH2, { width: 58, align: "center" });
+    doc.text("-Lei-",            C_VALOARE, TH3, { width: 58, align: "center" });
+
+    doc.text("TVA",              C_TVA,     TH1, { width: 52, align: "center" });
+    doc.text("(21%)",            C_TVA,     TH2, { width: 52, align: "center" });
+    doc.text("-Lei-",            C_TVA,     TH3, { width: 52, align: "center" });
+
+    // Build rows: product items + transport (if any)
+    type TableRow = { name: string; qty: number; priceNoTva: number; valNoTva: number; tvaAmt: number };
+    const rows: TableRow[] = data.items.map((item) => {
+      const pNoTva  = item.price / (1 + TVA_RATE);
+      const vNoTva  = pNoTva * item.quantity;
+      const tva     = item.price * item.quantity - vNoTva;
+      return { name: item.name, qty: item.quantity, priceNoTva: pNoTva, valNoTva: vNoTva, tvaAmt: tva };
+    });
+
+    if (data.deliveryFee > 0) {
+      const pNoTva = data.deliveryFee / (1 + TVA_RATE);
+      rows.push({ name: "Servicii transport", qty: 1, priceNoTva: pNoTva, valNoTva: pNoTva, tvaAmt: data.deliveryFee - pNoTva });
+    }
+
+    let rowY = TABLE_Y + HDR_H;
+    rows.forEach((row, i) => {
       const bg = i % 2 === 0 ? "#FFFFFF" : BG_ALT;
       doc.rect(M, rowY, BODY_W, 15).fill(bg);
 
-      const priceNoTva = item.price / (1 + TVA_RATE);
-      const lineTotal  = item.price * item.quantity;
-
       doc.font("Regular").fontSize(8).fill(DGRAY);
-      doc.text(String(i + 1),          C_NR,    rowY + 3.5, { width: 20,   align: "center" });
-      doc.text(item.name,              C_NAME,  rowY + 3.5, { width: NAME_W });
-      doc.text("buc",                  C_UM,    rowY + 3.5, { width: 30,   align: "center" });
-      doc.text(String(item.quantity),  C_QTY,   rowY + 3.5, { width: 42,   align: "right" });
-      doc.text(priceNoTva.toFixed(2),  C_PRICE, rowY + 3.5, { width: 54,   align: "right" });
-      doc.text("21%",                  C_TVA,   rowY + 3.5, { width: 40,   align: "right" });
-      doc.text(lineTotal.toFixed(2),   C_TOTAL, rowY + 3.5, { width: 40,   align: "right" });
+      doc.text(String(i + 1),                  C_NR,      rowY + 3.5, { width: 18,  align: "center" });
+      doc.text(row.name,                        C_NAME,    rowY + 3.5, { width: NAME_W });
+      doc.text("buc",                           C_UM,      rowY + 3.5, { width: 28,  align: "center" });
+      doc.text(String(row.qty),                 C_QTY,     rowY + 3.5, { width: 32,  align: "center" });
+      doc.text(row.priceNoTva.toFixed(2),       C_PRICE,   rowY + 3.5, { width: 72,  align: "center" });
+      doc.text(row.valNoTva.toFixed(2),         C_VALOARE, rowY + 3.5, { width: 58,  align: "center" });
+      doc.text(row.tvaAmt.toFixed(2),           C_TVA,     rowY + 3.5, { width: 52,  align: "center" });
 
       rowY += 15;
     });
@@ -232,14 +248,14 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
       .strokeColor(LGRAY).lineWidth(0.5).stroke();
 
     // ── TOTALS ────────────────────────────────────────────────────────────────
-    const TOT_X  = PAGE_W - M - 220;
-    const VAL_X  = PAGE_W - M - 80;
-    const VAL_W  = 80;
+    const TOT_X = PAGE_W - M - 220;
+    const VAL_X = PAGE_W - M - 80;
+    const VAL_W = 80;
     let totY = rowY + 12;
 
     const totRow = (label: string, value: string, bold = false) => {
-      const f = bold ? "Bold" : "Regular";
-      const sz = bold ? 10 : 8.5;
+      const f   = bold ? "Bold" : "Regular";
+      const sz  = bold ? 10 : 8.5;
       const col = bold ? BLACK : DGRAY;
       doc.font(f).fontSize(sz).fill(col)
         .text(label, TOT_X, totY, { width: VAL_X - TOT_X - 8 });
@@ -248,25 +264,18 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
       totY += bold ? 16 : 14;
     };
 
-    // Subtotal fara TVA = only items (no delivery), TVA on items only
-    const itemsTotal   = data.subtotal;                           // items incl. TVA
-    const subtotalNoTva = itemsTotal / (1 + TVA_RATE);
-    const tvaAmount     = itemsTotal - subtotalNoTva;
+    const totalValNoTva = rows.reduce((s, r) => s + r.valNoTva, 0);
+    const totalTva      = rows.reduce((s, r) => s + r.tvaAmt, 0);
 
-    totRow("Subtotal fara TVA:", `${subtotalNoTva.toFixed(2)} lei`);
-    totRow("TVA (21%):",         `${tvaAmount.toFixed(2)} lei`);
-    if (data.deliveryFee > 0) {
-      totRow("Taxa livrare:", `${data.deliveryFee.toFixed(2)} lei`);
-    }
+    totRow("Total valoare fara TVA:", `${totalValNoTva.toFixed(2)} lei`);
+    totRow("TVA (21%):",              `${totalTva.toFixed(2)} lei`);
 
     totY += 2;
     doc.moveTo(TOT_X, totY).lineTo(PAGE_W - M, totY)
       .strokeColor(BRAND).lineWidth(1).stroke();
     totY += 6;
 
-    // Total highlight
     doc.rect(TOT_X - 6, totY - 3, PAGE_W - M - TOT_X + 6, 22).fill(BG_BOX);
-    doc.moveTo(TOT_X - 6, totY - 3).lineTo(TOT_X - 2, totY - 3)
     doc.rect(TOT_X - 6, totY - 3, 3, 22).fill(BRAND);
     totRow("TOTAL:", `${data.total.toFixed(2)} Lei`, true);
 

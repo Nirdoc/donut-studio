@@ -94,12 +94,6 @@ export default function RegisterClient() {
           <div className="absolute inset-0 bg-[#0d0502]/80" />
         </div>
         <div className="relative z-10 text-center">
-          <Image
-            src="/logo.svg"
-            alt="Donut Studio" width={160} height={80}
-            className="h-20 w-auto mx-auto mb-10"
-            unoptimized
-          />
           <h2 className="font-display text-4xl text-[var(--text)] mb-4 leading-tight">
             Alătură-te<br />comunității noastre!
           </h2>
